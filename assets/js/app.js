@@ -377,16 +377,24 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
   const payLoader = $('#payLoader'), payFail = $('#payFail');
   const backUrl = () => new URL('pago-ok.html', location.href).href.split('#')[0].split('?')[0];
   const describe = (c) => `Curso CapCut Salud - ${c.plan} x${c.n} - ${c.full ? 'Pago total' : 'Reserva 50%'}`;
-  let loaded = {}, payErr = [], lastPay = null;
+  let loaded = {}, payErr = [], lastPay = null, payRun = 0;
 
+  // Ninguna espera puede quedarse colgada: todo tiene tiempo límite
+  const withTimeout = (promise, ms, msg) => Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(msg)), ms))
+  ]);
   function loadScript(src) {
     if (loaded[src]) return loaded[src];
-    return (loaded[src] = new Promise((res, rej) => {
-      const sc = document.createElement('script'); sc.src = src;
+    const pr = new Promise((res, rej) => {
+      const sc = document.createElement('script'); sc.src = src; sc.async = true;
       sc.onload = res;
-      sc.onerror = () => { delete loaded[src]; rej(new Error('no cargó ' + src.split('/').pop() + ' (¿bloqueador de anuncios?)')); };
+      sc.onerror = () => rej(new Error('no cargó ' + src.split('/').pop() + ' (¿bloqueador de anuncios?)'));
       document.head.appendChild(sc);
-    }));
+    });
+    loaded[src] = withTimeout(pr, 10000, 'tardó demasiado en cargar ' + src.split('/').pop())
+      .catch(e => { delete loaded[src]; throw e; });
+    return loaded[src];
   }
   function waitEpayco(ms) {
     return new Promise((res, rej) => {
@@ -398,46 +406,62 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
       })();
     });
   }
+  // Carga el script de ePayco: primero directo; si el navegador lo bloquea, desde este mismo dominio
   function loadEpayco(name) {
     const direct = `https://checkout.epayco.co/${name}.js`, proxy = `/api/epayco-js?f=${name}`;
     return loadScript(direct).then(() => waitEpayco(6000)).catch((e1) =>
       loadScript(proxy).then(() => waitEpayco(6000)).catch((e2) => { throw new Error(e1.message + ' / respaldo: ' + e2.message); }));
   }
-  // 1) Checkout v2: la sesión se crea en el servidor (Vercel) y el precio se valida allá
-  function payV2(c) {
+  // Quita el objeto ePayco anterior para que el script v2 y el clásico no se mezclen
+  function resetEpayco() {
+    try { delete window.ePayco; } catch { window.ePayco = undefined; }
+    loaded = {};
+    $$('script[src*="checkout.epayco.co"], script[src*="/api/epayco-js"]').forEach(el => el.parentNode && el.parentNode.removeChild(el));
+  }
+  // 1) Checkout v2: primero se crea la sesión en el servidor (el precio se valida allá) y solo
+  //    si eso funciona se carga el script v2. Así no se mezcla con el checkout clásico.
+  async function payV2(c) {
     const f = form.elements;
-    const session = fetch('/api/epayco', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan: c.plan, personas: c.n, full: c.full, name: f.nombre.value, phone: f.celular.value, profesion: f.profesion.value })
-    }).then(r => r.json().catch(() => ({})).then(d => { if (!r.ok || !d.sessionId) throw new Error('servidor: ' + (d.error || 'HTTP ' + r.status)); return d; }));
-    return Promise.all([session, loadEpayco('checkout-v2')]).then(([d]) => {
-      const ch = ePayco.checkout.configure({ sessionId: d.sessionId, type: 'onepage', test: !!d.test });
-      if (ch && ch.onErrors) ch.onErrors(err => console.error('ePayco v2', err));
-      if (!ch || typeof ch.open !== 'function') throw new Error('checkout v2 sin método open');
-      ch.open();
-    });
+    const ctrl = ('AbortController' in window) ? new AbortController() : null;
+    const t = setTimeout(() => ctrl && ctrl.abort(), 12000);
+    let r, d;
+    try {
+      r = await fetch('/api/epayco', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl ? ctrl.signal : undefined,
+        body: JSON.stringify({ plan: c.plan, personas: c.n, full: c.full, name: f.nombre.value, phone: f.celular.value, profesion: f.profesion.value })
+      });
+      d = await r.json().catch(() => ({}));
+    } catch (e) {
+      throw new Error('servidor: ' + (e.name === 'AbortError' ? 'no respondió a tiempo' : e.message));
+    } finally { clearTimeout(t); }
+    if (!r.ok || !d.sessionId) throw new Error('servidor: ' + (d.error || 'HTTP ' + r.status));
+    resetEpayco();
+    await loadEpayco('checkout-v2');
+    const ch = ePayco.checkout.configure({ sessionId: d.sessionId, type: 'onepage', test: !!d.test });
+    if (ch && ch.onErrors) ch.onErrors(err => console.error('ePayco v2', err));
+    if (!ch || typeof ch.open !== 'function') throw new Error('checkout v2 sin método open');
+    payLoader.hidden = true;           // el checkout de ePayco queda al frente
+    ch.open();
   }
   // 2) Respaldo: checkout clásico con la llave pública (funciona aunque no haya servidor)
-  function payLegacy(c) {
-    if (window.ePayco && window.ePayco.checkout && !loaded['https://checkout.epayco.co/checkout.js'] && !loaded['/api/epayco-js?f=checkout']) {
-      try { delete window.ePayco; } catch { window.ePayco = undefined; }
-    }
-    return loadEpayco('checkout').then(() => {
-      const f = form.elements;
-      const handler = ePayco.checkout.configure({ key: EPAYCO.key, test: EPAYCO.test, p_cust_id_cliente: EPAYCO.customer });
-      handler.open({
-        name: 'Curso CapCut Salud Pro',
-        description: describe(c),
-        invoice: 'CCS-' + Date.now(),
-        currency: 'cop',
-        amount: String(c.pay),
-        tax_base: '0', tax: '0',
-        country: 'co', lang: 'es', external: 'false',
-        extra1: c.plan, extra2: c.full ? 'total' : 'anticipo', extra3: String(c.n),
-        name_billing: f.nombre.value.trim(),
-        mobilephone_billing: f.celular.value.replace(/\D/g, '').slice(-10),
-        response: backUrl(), confirmation: backUrl()
-      });
+  async function payLegacy(c) {
+    resetEpayco();
+    await loadEpayco('checkout');
+    const f = form.elements;
+    const handler = ePayco.checkout.configure({ key: EPAYCO.key, test: EPAYCO.test, p_cust_id_cliente: EPAYCO.customer });
+    payLoader.hidden = true;
+    handler.open({
+      name: 'Curso CapCut Salud Pro',
+      description: describe(c),
+      invoice: 'CCS-' + Date.now(),
+      currency: 'cop',
+      amount: String(c.pay),
+      tax_base: '0', tax: '0',
+      country: 'co', lang: 'es', external: 'false',
+      extra1: c.plan, extra2: c.full ? 'total' : 'anticipo', extra3: String(c.n),
+      name_billing: f.nombre.value.trim(),
+      mobilephone_billing: f.celular.value.replace(/\D/g, '').slice(-10),
+      response: backUrl(), confirmation: backUrl()
     });
   }
   function busy(on) {
@@ -446,6 +470,7 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     if (!on) updateTotal(); else $('#payBtnTxt').textContent = 'Cargando pago seguro…';
   }
   function pay(c) {
+    const run = ++payRun;
     lastPay = c; payErr = [];
     const f = form.elements;
     try {
@@ -455,11 +480,18 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
       }));
     } catch { /* nada */ }
     busy(true);
+    // Vigilante: si en 35 s no abrió el pago, se ofrece reintentar o recibir el link por WhatsApp
+    const watchdog = setTimeout(() => {
+      if (run !== payRun) return;
+      payRun++;
+      payErr.push('tiempo de espera agotado');
+      busy(false); payFallback(c);
+    }, 35000);
     const tryV2 = /^https?:$/.test(location.protocol) ? payV2(c) : Promise.reject(new Error('abierto como archivo local'));
     tryV2
-      .catch(e => { payErr.push('v2: ' + (e && e.message || e)); console.warn('ePayco v2:', e); return payLegacy(c); })
-      .catch(e => { payErr.push('clásico: ' + (e && e.message || e)); console.error('ePayco clásico:', e); payFallback(c); })
-      .then(() => busy(false));
+      .catch(e => { if (run !== payRun) throw e; payErr.push('v2: ' + (e && e.message || e)); console.warn('ePayco v2:', e); return payLegacy(c); })
+      .catch(e => { if (run !== payRun) return; payErr.push('clásico: ' + (e && e.message || e)); console.error('ePayco clásico:', e); payFallback(c); })
+      .then(() => { clearTimeout(watchdog); if (run === payRun) busy(false); });
   }
   function payFallback(c) {
     const f = form.elements;

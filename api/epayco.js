@@ -26,6 +26,7 @@ const send = (res, status, data) => {
 };
 async function readBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
+  if (typeof req.body === 'string') { try { return JSON.parse(req.body || '{}'); } catch { return {}; } }
   let raw = '';
   for await (const chunk of req) { raw += chunk; if (raw.length > 4000) break; }
   try { return JSON.parse(raw || '{}'); } catch { return {}; }
@@ -38,6 +39,7 @@ async function login(k) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: 'Basic ' + Buffer.from(`${k.pub}:${k.priv}`).toString('base64') },
     body: '{}',
+    signal: AbortSignal.timeout(9000),
   });
   const d = await r.json().catch(() => ({}));
   if (!d.token) throw Object.assign(new Error('ePayco no aceptó las llaves (' + String(d.textResponse || d.message || d.error || ('HTTP ' + r.status)).slice(0, 100) + ').'), { status: 502 });
@@ -75,6 +77,7 @@ module.exports = async (req, res) => {
     };
     const create = (token) => fetch('https://apify.epayco.co/payment/session/create', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body),
+      signal: AbortSignal.timeout(9000),
     });
     let r = await create(await login(k));
     if (r.status === 401) { tokenCache = null; r = await create(await login(k)); }
@@ -83,6 +86,7 @@ module.exports = async (req, res) => {
     if (!sessionId) return send(res, 502, { error: 'ePayco no pudo crear la sesión de pago: ' + String(d.textResponse || d.message || r.status).slice(0, 120) });
     send(res, 200, { sessionId, test: k.test, amount, description: desc });
   } catch (e) {
-    send(res, e.status || 500, { error: e.message || 'Error inesperado.' });
+    const msg = e.name === 'TimeoutError' || e.name === 'AbortError' ? 'ePayco no respondió a tiempo.' : (e.message || 'Error inesperado.');
+    send(res, e.status || 502, { error: msg });
   }
 };
