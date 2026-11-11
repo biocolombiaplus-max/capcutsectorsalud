@@ -768,3 +768,89 @@ p { margin: 0 0 1em; }
   .timeline__time small { font-size: .85rem; margin: 0; }
 }
 .timeline__card--edit { border-color: rgba(123,92,255,.5); background: linear-gradient(135deg, rgba(123,92,255,.14), rgba(255,46,147,.08)); }
+
+/* =========================================================
+   Conversión: dolor → solución, método, IA, inscripción fácil
+   ========================================================= */
+.chip--yellow { color: var(--yellow); border-color: rgba(255,214,10,.4); background: rgba(255,214,10,.08); }
+.hero__wins { list-style: none; padding: 0; margin: 1.2rem 0 0; display: grid; gap: .5rem; }
+.hero__wins li { display: flex; gap: .6rem; align-items: center; color: #dfe3f5; }
+.hero__wins li::before { content: "✓"; flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--aqua); color: #04121a; font-size: .75rem; font-weight: 800; }
+.hero__wins b { color: #fff; }
+
+/* Dolor → solución */
+.ps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+.ps { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); background: var(--card); transition: transform .3s, border-color .3s; }
+.ps:hover { transform: translateY(-5px); border-color: rgba(0,229,199,.45); }
+.ps__pain { display: flex; gap: .9rem; padding: 1.4rem 1.4rem 1.2rem; flex: 1; }
+.ps__emoji { flex: none; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.4rem; background: rgba(255,84,112,.12); }
+.ps__pain h3 { font-size: 1.05rem; margin-bottom: .3rem; }
+.ps__pain p { margin: 0; color: var(--muted); font-size: .92rem; }
+.ps__sol { display: flex; gap: .7rem; align-items: flex-start; padding: 1rem 1.4rem; background: linear-gradient(90deg, rgba(0,229,199,.12), rgba(123,92,255,.08)); border-top: 1px solid rgba(0,229,199,.25); }
+.ps__sol p { margin: 0; font-size: .92rem; color: #e3f8f5; }
+.ps__sol b { color: var(--aqua); }
+.ps__check { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--aqua); color: #04121a; font-weight: 800; font-size: .8rem; margin-top: 1px; }
+
+/* Método en 3 pasos */
+.steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; counter-reset: s; position: relative; }
+.step { position: relative; padding: 2.2rem 1.8rem 1.8rem; border-radius: 24px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border: 1px solid var(--line); text-align: center; }
+.step__n { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font: 800 1.1rem var(--display); background: var(--grad); color: #1a0613; box-shadow: 0 10px 24px -8px rgba(255,46,147,.7); }
+.step__ico { display: block; font-size: 2.4rem; margin: .4rem 0 .8rem; }
+.step p { color: var(--muted); margin: 0; }
+.mid-cta { margin-top: 2.6rem; display: flex; align-items: center; justify-content: space-between; gap: 1.2rem; flex-wrap: wrap; padding: 1.4rem 1.8rem; border-radius: 22px; background: linear-gradient(120deg, rgba(255,46,147,.16), rgba(255,214,10,.1)); border: 1px solid rgba(255,214,10,.35); }
+.mid-cta b { display: block; font: 800 1.25rem var(--display); }
+.mid-cta small { color: #d3d8ec; }
+
+/* IA */
+.section--ia { background: radial-gradient(ellipse at 50% 0%, rgba(123,92,255,.18), transparent 60%), var(--bg); }
+.tag--ai { color: #c9b8ff; border-color: rgba(123,92,255,.5); background: rgba(123,92,255,.14); }
+.ai-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; align-items: stretch; }
+.ai { position: relative; padding: 1.9rem 1.7rem; border-radius: 24px; background: var(--card); border: 1px solid var(--line); transition: transform .3s; }
+.ai:hover { transform: translateY(-6px); }
+.ai--featured { background: linear-gradient(var(--bg-3), var(--bg-3)) padding-box, linear-gradient(135deg, var(--violet), var(--fuchsia), var(--yellow)) border-box; border: 2px solid transparent; box-shadow: 0 30px 70px -30px rgba(123,92,255,.6); }
+.ai__ribbon { position: absolute; top: -14px; right: 18px; background: var(--yellow); color: #151200; font-size: .75rem; font-weight: 800; padding: .4em .9em; border-radius: 999px; text-transform: uppercase; letter-spacing: .05em; }
+.ai__head { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.2rem; }
+.ai__head h3 { margin: 0; font-size: 1.3rem; }
+.ai__head small { color: var(--muted); }
+.ai__mark { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; font: 800 1.5rem var(--display); color: #fff; flex: none; }
+.ai__mark--gpt { background: linear-gradient(135deg, #10a37f, #0b7a5f); }
+.ai__mark--claude { background: linear-gradient(135deg, #e0855a, #c15f3c); }
+.ai__mark--gemini { background: linear-gradient(135deg, #4285f4, #9b72cb, #d96570); }
+.ai ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .7rem; }
+.ai li { display: flex; gap: .6rem; color: #dbe0f3; }
+.ai li::before { content: "✓"; color: var(--aqua); font-weight: 800; }
+.ai-note { text-align: center; color: #c9cfe6; margin: 2rem auto 0; max-width: 680px; padding: 1rem 1.4rem; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px dashed var(--line); }
+
+/* Inscripción en 3 pasos */
+.howto { margin: 2.4rem auto 0; max-width: 980px; padding: 1.6rem 1.8rem; border-radius: 22px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.howto h3 { text-align: center; font-size: 1.2rem; margin-bottom: 1.2rem; }
+.howto h3 span { color: var(--muted); font-weight: 600; font-family: var(--font); font-size: .95rem; }
+.howto ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.howto li { display: flex; align-items: center; gap: .8rem; }
+.howto li > span { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font: 800 1rem var(--display); background: rgba(0,229,199,.14); color: var(--aqua); border: 1px solid rgba(0,229,199,.4); }
+.howto b { display: block; }
+.howto small { color: var(--muted); }
+
+@media (max-width: 1020px) {
+  .ps-grid { grid-template-columns: 1fr 1fr; }
+  .ai-grid, .steps { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
+  .steps { gap: 2rem; }
+}
+@media (max-width: 680px) {
+  .ps-grid { grid-template-columns: 1fr; }
+  .howto ol { grid-template-columns: 1fr; }
+  .mid-cta { flex-direction: column; align-items: stretch; text-align: center; }
+  .mid-cta .btn { width: 100%; }
+}
+.hero__wins li, .ai li { display: block; position: relative; padding-left: 2rem; }
+.hero__wins li::before { position: absolute; left: 0; top: .15em; }
+.ai li { padding-left: 1.4rem; }
+.ai li::before { position: absolute; left: 0; top: 0; }
+.plan__list { align-content: start; }
+@media (max-width: 680px) {
+  .ps__pain p { display: none; }
+  .ps__pain { align-items: center; padding: 1.1rem 1.2rem; }
+  .ps__emoji { width: 40px; height: 40px; font-size: 1.2rem; }
+  .ps__pain h3 { margin: 0; }
+  .ps__sol { padding: .9rem 1.2rem; }
+}
