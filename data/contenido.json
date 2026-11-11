@@ -3,12 +3,16 @@
     "whatsapp": "573505457420",
     "instagram": "",
     "ciudad": "Cúcuta",
-    "lugar": "Lugar por confirmar · Cúcuta",
+    "lugar": "Qu1nce Workclub · Los Caobos, Cúcuta",
     "fechaTexto": "Sábado 28 de noviembre",
     "horario": "2:00 p.m. – 6:00 p.m.",
     "fechaInicio": "2026-11-28T14:00",
     "cuposTotales": 30,
-    "cuposDisponibles": 12
+    "cuposDisponibles": 12,
+    "lugarNombre": "Qu1nce Workclub",
+    "direccion": "Calle 15 #1E-100, barrio Los Caobos, Cúcuta",
+    "mapsUrl": "https://www.google.com/maps/dir//Qu1nce+Workclub,+Cl.+15+%231E-100,+Los+Caobos,+C%C3%BAcuta,+Norte+de+Santander/@7.8972687,-72.4849859,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x8e665ba2002a13fd:0x73df8496598653cd!2m2!1d-72.4961128!2d7.8831822?entry=ttu&g_ep=EgoyMDI2MTEwOS4wIKXMDSoASAFQAw%3D%3D",
+    "wazeUrl": "https://waze.com/ul?ll=7.8831822,-72.4961128&navigate=yes"
   },
   "precios": {
     "individual": 250000,

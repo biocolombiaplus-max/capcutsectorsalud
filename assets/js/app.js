@@ -10,12 +10,24 @@
   const LOCAL_KEY = 'contenido';
 
   /* ---------- Contenido por defecto ---------- */
+  function unsplash(id, w = 1800) { return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=70`; }
+  const IMG_SLOTS = [
+    ['hero', 'Portada (fondo)'], ['tira1', 'Franja · Medicina'], ['tira2', 'Franja · Odontología'],
+    ['tira3', 'Franja · Laboratorio'], ['tira4', 'Franja · Enfermería'], ['dolores', '¿Te identificas? (fondo)'],
+    ['paraQuien', 'Para quién (fondo)'], ['ia', 'Sección IA (fondo)'], ['lugar', 'Dónde será (fondo)'],
+    ['inscripcion', 'Inscripción (fondo)']
+  ];
+
   const DEFAULTS = {
     config: {
       whatsapp: '573505457420',
       instagram: '',
       ciudad: 'Cúcuta',
-      lugar: 'Lugar por confirmar · Cúcuta',
+      lugar: 'Qu1nce Workclub · Los Caobos, Cúcuta',
+      lugarNombre: 'Qu1nce Workclub',
+      direccion: 'Calle 15 #1E-100, barrio Los Caobos, Cúcuta',
+      mapsUrl: 'https://www.google.com/maps/dir//Qu1nce+Workclub,+Cl.+15+%231E-100,+Los+Caobos,+C%C3%BAcuta,+Norte+de+Santander/@7.8972687,-72.4849859,15z/data=!4m8!4m7!1m0!1m5!1m1!1s0x8e665ba2002a13fd:0x73df8496598653cd!2m2!1d-72.4961128!2d7.8831822',
+      wazeUrl: 'https://waze.com/ul?ll=7.8831822,-72.4961128&navigate=yes',
       fechaTexto: 'Sábado 28 de noviembre',
       horario: '2:00 p.m. – 6:00 p.m.',
       fechaInicio: '2026-11-28T14:00',
@@ -36,6 +48,18 @@
       clinica: 185000,
       clinicaMin: 5,
       anticipoPct: 50
+    },
+    imagenes: {       // fotos de fondo (se pueden cambiar en el administrador)
+      hero: unsplash('1576091160550-2173dba999ef'),
+      dolores: unsplash('1505751172876-fa1923c5c528'),
+      paraQuien: unsplash('1519494026892-80bbd2d6fd0d'),
+      ia: unsplash('1532187863486-abf9dbad1b69'),
+      lugar: unsplash('1497366216548-37526070297c'),
+      inscripcion: unsplash('1631217868264-e5b90bb7e133'),
+      tira1: unsplash('1612349317150-e413f6a5b16d', 900),
+      tira2: unsplash('1629909613654-28e377c37b09', 900),
+      tira3: unsplash('1579154204601-01588f351e67', 900),
+      tira4: unsplash('1584515933487-779824d29309', 900)
     },
     galeria: [],      // [{ src, titulo }]
     testimonios: [],  // [{ nombre, profesion, texto, foto, estrellas }]
@@ -204,6 +228,32 @@
     $('#certMock').hidden = !!cert.imagen;
     if (cert.imagen) $('#certReal').src = cert.imagen;
 
+    // fotos de fondo (si una foto no carga, queda el degradado de color)
+    const imgs = state.imagenes || {};
+    $$('[data-bg], [data-bg-img]').forEach(el => {
+      const url = imgs[el.dataset.bg || el.dataset.bgImg];
+      if (url) el.style.setProperty('--img', `url("${String(url).replace(/"/g, '%22')}")`);
+      else el.style.removeProperty('--img');
+    });
+
+    // lugar: Google Maps, Waze, calendario
+    const cfg = state.config;
+    if (cfg.mapsUrl) $('#mapsBtn').href = cfg.mapsUrl;
+    if (cfg.wazeUrl) $('#wazeBtn').href = cfg.wazeUrl;
+    const q = encodeURIComponent(`${cfg.lugarNombre || ''}, ${cfg.direccion || ''}`);
+    const mapSrc = `https://www.google.com/maps?q=${q}&z=16&output=embed`;
+    if ($('#venueMap').getAttribute('src') !== mapSrc) $('#venueMap').setAttribute('src', mapSrc);
+    const start = new Date(`${cfg.fechaInicio}:00-05:00`);
+    if (!isNaN(start)) {
+      const fmt = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      const end = new Date(start.getTime() + 4 * 36e5);
+      $('#calBtn').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        + '&text=' + encodeURIComponent('Taller CapCut para el Sector Salud')
+        + '&dates=' + fmt(start) + '/' + fmt(end)
+        + '&location=' + encodeURIComponent(`${cfg.lugarNombre}, ${cfg.direccion}`)
+        + '&details=' + encodeURIComponent('Taller 100% práctico desde tu celular. Lleva tu celular cargado con CapCut instalado. Cómo llegar: ' + (cfg.mapsUrl || ''));
+    }
+
     // enlaces
     const msg = `Hola 👋 quiero información del curso de CapCut para el sector salud (${state.config.fechaTexto}, ${state.config.ciudad}).`;
     $('#waFloat').href = waLink(msg);
@@ -216,6 +266,15 @@
     updateTotal();
     observeReveals();
   }
+
+  /* ---------- Copiar dirección ---------- */
+  $('#copyAddr').addEventListener('click', async () => {
+    const txt = `${state.config.lugarNombre} · ${state.config.direccion}`;
+    const btn = $('#copyAddr');
+    try { await navigator.clipboard.writeText(txt); btn.textContent = '✓ Dirección copiada'; }
+    catch { window.prompt('Copia la dirección:', txt); }
+    setTimeout(() => (btn.textContent = '📋 Copiar dirección'), 2200);
+  });
 
   /* ---------- Cuenta regresiva ---------- */
   let cdTimer;
@@ -609,6 +668,7 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     renderAdmTestis();
     renderAdmCaptures();
     renderAdmCert();
+    renderAdmImgs();
   }
 
   // Campos simples → guardado automático
@@ -810,6 +870,40 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     renderAdmCert(); render(); persist(true);
   });
   $('#admCertRemove').addEventListener('click', () => { state.certificado.imagen = ''; renderAdmCert(); render(); persist(true); });
+
+  // Imágenes de fondo
+  function renderAdmImgs() {
+    const imgs = state.imagenes || (state.imagenes = {});
+    $('#admImgs').innerHTML = IMG_SLOTS.map(([k, label]) => `
+      <div class="adm-img" data-k="${k}">
+        <div class="adm-img__prev" style="background-image:url('${esc(imgs[k] || '')}')"></div>
+        <div class="adm-img__body">
+          <b>${esc(label)}</b>
+          <input data-imgurl placeholder="https://… (enlace de imagen)" value="${esc(String(imgs[k] || '').startsWith('data:') ? '' : (imgs[k] || ''))}">
+          <div class="adm-photo__actions">
+            <label class="file-btn"><input type="file" accept="image/*" data-imgfile hidden><span>Subir foto</span></label>
+            <button type="button" data-imgreset>Restaurar</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  $('#admImgs').addEventListener('change', async (e) => {
+    const k = e.target.closest('.adm-img')?.dataset.k; if (!k) return;
+    if (e.target.matches('[data-imgfile]')) {
+      const f = e.target.files[0]; if (!f) return;
+      state.imagenes[k] = await readImage(f, 1800, .8);
+      renderAdmImgs(); render(); persist(true);
+    } else if (e.target.matches('[data-imgurl]')) {
+      state.imagenes[k] = e.target.value.trim();
+      renderAdmImgs(); render(); persist(true);
+    }
+  });
+  $('#admImgs').addEventListener('click', (e) => {
+    if (!e.target.matches('[data-imgreset]')) return;
+    const k = e.target.closest('.adm-img').dataset.k;
+    state.imagenes[k] = DEFAULTS.imagenes[k];
+    renderAdmImgs(); render(); persist(true);
+  });
 
   // Publicar / respaldo
   $('#admExport').addEventListener('click', () => {
