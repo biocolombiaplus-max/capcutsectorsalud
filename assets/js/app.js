@@ -30,10 +30,10 @@
       foto: ''
     },
     precios: {
-      individual: 198000,
-      equipo: 168000,
+      individual: 250000,
+      equipo: 210000,
       equipoMin: 3,
-      clinica: 148000,
+      clinica: 185000,
       clinicaMin: 5,
       anticipoPct: 50
     },
@@ -146,7 +146,7 @@
     $$('[data-save]').forEach(el => {
       const plan = el.dataset.save;
       const pct = p.individual ? Math.round((1 - p[plan] / p.individual) * 100) : 0;
-      el.textContent = pct > 0 ? `Ahorra ${pct}%` : '';
+      el.textContent = pct > 0 ? `Ahorras ${cop(p.individual - p[plan])} c/u · ${pct}%` : '';
       el.hidden = pct <= 0;
     });
 

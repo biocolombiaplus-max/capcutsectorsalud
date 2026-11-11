@@ -6,7 +6,7 @@ Landing page del curso presencial de CapCut para profesionales de la salud en C�
 ## Pagos (tarjeta y PSE con ePayco)
 Usa la misma cuenta de ePayco de la landing de tiendas virtuales (llave pública `347e…3fba`, cliente `1595409`).
 
-- **Plan Individual:** reserva con el **50%** ($99.000) o pago total. El saldo se paga el día del curso.
+- **Plan Individual:** reserva con el **50%** ($125.000) o pago total. El saldo se paga el día del curso.
 - **Promociones grupales** (Equipo Pro y Clínica/IPS): se pagan **completas**.
 - **Botón "Quiero terminar mi registro en WhatsApp":** pide nombre y WhatsApp y abre el chat con el **350 545 7420** con el resumen.
 - Tras pagar, ePayco devuelve al cliente a `pago-ok.html`, que muestra el estado y un botón para confirmar por WhatsApp.

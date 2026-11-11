@@ -6,9 +6,9 @@
 // Los precios se calculan aquí: no se confía en el valor que manda el navegador.
 // Si cambias precios en el administrador, cámbialos también aquí.
 const PLANS = {
-  'Individual':    { price: 198000, min: 1 },
-  'Equipo Pro':    { price: 168000, min: 3 },
-  'Clínica / IPS': { price: 148000, min: 5 },
+  'Individual':    { price: 250000, min: 1 },
+  'Equipo Pro':    { price: 210000, min: 3 },
+  'Clínica / IPS': { price: 185000, min: 5 },
 };
 const ANTICIPO = 0.5; // reserva con el 50% (solo plan Individual; las promociones se pagan completas)
 

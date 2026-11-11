@@ -11,10 +11,10 @@
     "cuposDisponibles": 12
   },
   "precios": {
-    "individual": 198000,
-    "equipo": 168000,
+    "individual": 250000,
+    "equipo": 210000,
     "equipoMin": 3,
-    "clinica": 148000,
+    "clinica": 185000,
     "clinicaMin": 5
   },
   "galeria": [],
