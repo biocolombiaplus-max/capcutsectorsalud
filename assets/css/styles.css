@@ -767,3 +767,4 @@ p { margin: 0 0 1em; }
   .timeline__time { display: flex; align-items: baseline; gap: .35rem; }
   .timeline__time small { font-size: .85rem; margin: 0; }
 }
+.timeline__card--edit { border-color: rgba(123,92,255,.5); background: linear-gradient(135deg, rgba(123,92,255,.14), rgba(255,46,147,.08)); }
