@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://checkout.epayco.co">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Great+Vibes&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23FF2E93'/%3E%3Cstop offset='1' stop-color='%2300E5C7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M26 20v24l18-12z' fill='%23fff'/%3E%3C/svg%3E">
 </head>
@@ -37,6 +37,7 @@
     <nav class="nav__links" id="navLinks">
       <a href="#para-quien">¿Para quién?</a>
       <a href="#temario">Temario</a>
+      <a href="#certificado">Certificado</a>
       <a href="#instructora">Instructora</a>
       <a href="#precios">Inversión</a>
       <a href="#faq">Preguntas</a>
@@ -79,6 +80,11 @@
         </a>
         <a href="#precios" class="btn btn--ghost btn--lg">Ver plan grupal</a>
       </div>
+      <ul class="hero__trust">
+        <li><span>🎓</span>Certificado incluido</li>
+        <li><span>🔒</span>Pago seguro con tarjeta o PSE</li>
+        <li><span>⭐</span><b id="heroRating">Cupos limitados</b></li>
+      </ul>
 
       <div class="countdown" id="countdown" aria-live="polite">
         <span class="countdown__label">El taller inicia en</span>
@@ -273,6 +279,113 @@
   </div>
 </section>
 
+<!-- ============ CERTIFICADO ============ -->
+<section class="section section--cert" id="certificado">
+  <div class="cert-glow"></div>
+  <div class="container cert-wrap">
+    <div class="cert-copy reveal">
+      <span class="eyebrow eyebrow--light">Certificado de asistencia</span>
+      <h2>Un respaldo que tus pacientes <span class="grad-text">ven y valoran</span></h2>
+      <p class="section__sub">En salud, la confianza se construye con preparación visible. Tu certificado demuestra que te actualizas para comunicarte mejor con tus pacientes, y eso se nota cuando eligen a quién consultar.</p>
+      <ul class="cert-benefits">
+        <li><span class="ico ico--yellow">🏥</span><div><b>Exhíbelo en tu consultorio</b><small>Sala de espera, recepción o tu escritorio: transmite profesionalismo.</small></div></li>
+        <li><span class="ico ico--fuchsia">📲</span><div><b>Compártelo en tus redes</b><small>Un post que muestra actualización constante y refuerza tu marca.</small></div></li>
+        <li><span class="ico ico--aqua">💼</span><div><b>Súmalo a tu hoja de vida y LinkedIn</b><small>Suma a tu perfil profesional y a tus directorios de salud.</small></div></li>
+        <li><span class="ico ico--yellow">🚀</span><div><b>Diferénciate de tu competencia</b><small>Pocos profesionales de la salud dominan el contenido en video.</small></div></li>
+      </ul>
+      <div class="cert-try">
+        <label for="certNameInput">✍️ Escribe tu nombre y mira cómo quedará tu certificado</label>
+        <div class="cert-try__row">
+          <input id="certNameInput" maxlength="40" placeholder="Ej: Dra. Laura Pérez" autocomplete="name">
+          <a href="#inscripcion" class="btn btn--pay">Quiero mi certificado</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="cert-stage reveal">
+      <div class="cert-badge">🎓 Lo recibes al finalizar</div>
+      <div class="cert" id="certMock" aria-label="Vista previa del certificado de asistencia">
+        <div class="cert__paper">
+          <div class="cert__corner cert__corner--tl"></div><div class="cert__corner cert__corner--tr"></div>
+          <div class="cert__corner cert__corner--bl"></div><div class="cert__corner cert__corner--br"></div>
+          <div class="cert__top">
+            <div class="cert__brand"><span class="cert__logo"><svg viewBox="0 0 24 24"><path d="M9 6v12l9-6z" fill="currentColor"/></svg></span><span data-bind="certificado.emisor">CapCut Salud Pro</span></div>
+            <div class="cert__code">N.º CSP-2026-<span id="certCode">0001</span></div>
+          </div>
+          <div class="cert__title">Certificado</div>
+          <div class="cert__subtitle">de asistencia</div>
+          <div class="cert__given">Se otorga a</div>
+          <div class="cert__name" id="certName">Tu nombre aquí</div>
+          <div class="cert__rule"></div>
+          <p class="cert__body">Por su participación en el taller presencial <b>“<span data-bind="certificado.titulo">CapCut para el Sector Salud: videos que generan confianza y ventas</span>”</b>, con una intensidad de <span data-bind="certificado.intensidad">4 horas</span>, realizado en <span data-bind="config.ciudad">Cúcuta</span> el <span data-bind="certificado.fecha">28 de noviembre de 2026</span>.</p>
+          <div class="cert__foot">
+            <div class="cert__sign">
+              <div class="cert__sign-script" data-bind="instructora.nombre">Diany Amaya</div>
+              <div class="cert__sign-line"></div>
+              <small><span data-bind="instructora.nombre">Diany Amaya</span> · Instructora</small>
+            </div>
+            <div class="cert__seal" aria-hidden="true">
+              <svg viewBox="0 0 120 120">
+                <defs>
+                  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE680"/><stop offset=".5" stop-color="#E5B000"/><stop offset="1" stop-color="#B07A00"/></linearGradient>
+                  <path id="sealPath" d="M60 60 m-38 0 a38 38 0 1 1 76 0 a38 38 0 1 1 -76 0"/>
+                </defs>
+                <g fill="url(#gold)">
+                  <path d="M60 4l7 9 11-4 3 11 11 1-2 11 10 6-6 10 6 10-10 6 2 11-11 1-3 11-11-4-7 9-7-9-11 4-3-11-11-1 2-11-10-6 6-10-6-10 10-6-2-11 11-1 3-11 11 4z"/>
+                </g>
+                <circle cx="60" cy="60" r="42" fill="#fff8e0" stroke="#C99400" stroke-width="1.5"/>
+                <circle cx="60" cy="60" r="32" fill="none" stroke="#C99400" stroke-width="1" stroke-dasharray="2 3"/>
+                <text font-size="8.5" font-weight="800" fill="#8a6100" letter-spacing="2.2"><textPath href="#sealPath">SECTOR SALUD · CAPCUT PRO ·</textPath></text>
+                <path d="M60 44l4.5 9.2 10.1 1.5-7.3 7.1 1.7 10.1L60 67.2l-9 4.7 1.7-10.1-7.3-7.1 10.1-1.5z" fill="url(#gold)"/>
+              </svg>
+            </div>
+            <div class="cert__sign cert__sign--right">
+              <div class="cert__date" data-bind="certificado.fecha">28 de noviembre de 2026</div>
+              <div class="cert__sign-line"></div>
+              <small>Fecha · <span data-bind="config.ciudad">Cúcuta</span></small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <img class="cert-real" id="certReal" alt="Certificado de asistencia" hidden>
+      <p class="cert-note">Vista previa ilustrativa. El certificado final se entrega con tu nombre al terminar el taller.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ANTES / DESPUÉS ============ -->
+<section class="section" id="transformacion">
+  <div class="container">
+    <div class="section__head reveal">
+      <span class="eyebrow">Tu transformación</span>
+      <h2>Así cambia tu presencia digital <span class="grad-text">en una tarde</span></h2>
+    </div>
+    <div class="ba reveal">
+      <div class="ba__col ba__col--before">
+        <h3>Antes del taller</h3>
+        <ul>
+          <li>Publicas sin un plan y sin saber qué funciona</li>
+          <li>Videos largos, sin subtítulos ni gancho</li>
+          <li>Te da pena grabarte o lo dejas para después</li>
+          <li>Tus redes no generan consultas</li>
+          <li>Dependes de terceros para cada video</li>
+        </ul>
+      </div>
+      <div class="ba__vs">VS</div>
+      <div class="ba__col ba__col--after">
+        <h3>Después del taller</h3>
+        <ul>
+          <li>Calendario de 30 días con ideas para tu especialidad</li>
+          <li>Reels dinámicos con subtítulos, música y gancho</li>
+          <li>Grabas con seguridad desde tu celular</li>
+          <li>Llamados a la acción que llevan pacientes a tu WhatsApp</li>
+          <li>Editas tú mismo en minutos, cuando quieras</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ INSTRUCTORA ============ -->
 <section class="section" id="instructora">
   <div class="container instr">
@@ -307,13 +420,22 @@
 </section>
 
 <!-- ============ TESTIMONIOS ============ -->
-<section class="section" id="testimonios" hidden>
+<section class="section section--testi" id="testimonios" hidden>
   <div class="container">
     <div class="section__head reveal">
-      <span class="eyebrow">Lo que dicen los asistentes</span>
-      <h2>Profesionales que ya <span class="grad-text">dieron el paso</span></h2>
+      <span class="eyebrow">Lo que dicen nuestros alumnos</span>
+      <h2>Profesionales de la salud que ya <span class="grad-text">dieron el paso</span></h2>
+      <div class="rating" id="ratingSum"></div>
     </div>
     <div class="testi-grid" id="testiGrid"></div>
+    <div class="captures" id="capturesWrap" hidden>
+      <h3 class="captures__title"><span class="pulse-dot"></span> Mensajes reales de nuestros alumnos</h3>
+      <div class="captures__grid" id="capturesGrid"></div>
+    </div>
+    <div class="testi-cta reveal">
+      <p>¿Listo para ser el próximo?</p>
+      <a href="#inscripcion" class="btn btn--pay btn--lg">Reservar mi cupo con <span data-price="anticipo">$99.000</span></a>
+    </div>
   </div>
 </section>
 
@@ -378,9 +500,10 @@
 <section class="section section--tight">
   <div class="container">
     <div class="assure reveal">
-      <div class="assure__item"><span>🛡️</span><div><strong>Cupo garantizado</strong><p>Reserva con el 50% y tu lugar queda asegurado.</p></div></div>
+      <div class="assure__item"><span>🛡️</span><div><strong>Cupo asegurado</strong><p>Reserva con el 50% y tu lugar queda apartado.</p></div></div>
+      <div class="assure__item"><span>🔒</span><div><strong>Pago 100% seguro</strong><p>Tarjeta o PSE procesado por ePayco.</p></div></div>
+      <div class="assure__item"><span>🎓</span><div><strong>Certificado</strong><p>De asistencia, con tu nombre, al finalizar.</p></div></div>
       <div class="assure__item"><span>📍</span><div><strong>Lugar</strong><p data-bind="config.lugar">Lugar por confirmar · Cúcuta</p></div></div>
-      <div class="assure__item"><span>💬</span><div><strong>Atención directa</strong><p>Resolvemos tus dudas por WhatsApp.</p></div></div>
     </div>
   </div>
 </section>
@@ -396,7 +519,9 @@
       <details class="reveal"><summary>¿Necesito saber editar videos?</summary><p>No. Empezamos desde cero y avanzamos hasta un nivel profesional. Si ya usas CapCut, aprenderás trucos y estrategia que marcan la diferencia.</p></details>
       <details class="reveal"><summary>¿Es exclusivo para profesionales de la salud?</summary><p>Sí. Todos los ejemplos, guiones y estrategias están pensados para médicos, odontólogos, psicólogos, bacteriólogos, radiólogos, enfermería, terapeutas, IPS, laboratorios y demás actores del sector salud.</p></details>
       <details class="reveal"><summary>¿Qué necesito llevar?</summary><p>Tu celular (Android o iPhone) con la app CapCut instalada, batería cargada y, si tienes, fotos o videos de tu consulta o servicio.</p></details>
-      <details class="reveal"><summary>¿Entregan certificado?</summary><p>Sí, todos los asistentes reciben certificado de asistencia al finalizar el taller.</p></details>
+      <details class="reveal"><summary>¿Entregan certificado?</summary><p>Sí. Todos los asistentes reciben un certificado de asistencia con su nombre al finalizar el taller, firmado por la instructora.</p></details>
+      <details class="reveal"><summary>¿Qué valor tiene el certificado?</summary><p>Acredita tu participación en una formación de 4 horas en contenido digital para el sector salud. Es ideal para exhibir en tu consultorio, compartir en redes y sumar a tu hoja de vida y LinkedIn. Es un certificado de asistencia: no es un título académico ni otorga créditos universitarios.</p></details>
+      <details class="reveal"><summary>¿Si vamos en grupo, cada uno recibe certificado?</summary><p>Sí, cada asistente recibe su propio certificado con su nombre.</p></details>
       <details class="reveal"><summary>¿Cómo funciona el plan grupal?</summary><p>Si se inscriben juntos el número mínimo de personas del plan, cada una paga el valor preferencial. Al ser una promoción, el valor se paga completo en un solo pago (tarjeta o PSE). Luego nos envías por WhatsApp los nombres de tu equipo para los certificados.</p></details>
       <details class="reveal"><summary>¿Cómo pago y reservo mi cupo?</summary><p>En la sección de inscripción eliges tu plan y pagas en línea con tarjeta de crédito, débito o PSE (pago seguro con ePayco). En el plan individual reservas con el 50% y pagas el saldo el día del curso; las promociones grupales se pagan completas. Si prefieres, toca “Quiero terminar mi registro en WhatsApp” y te atendemos directamente.</p></details>
       <details class="reveal"><summary>¿Hablan de normativa y ética en publicidad de salud?</summary><p>Sí. Incluimos buenas prácticas para comunicar con responsabilidad: cuidado de la privacidad del paciente, consentimiento y cómo evitar promesas de resultados.</p></details>
@@ -588,6 +713,7 @@
       <button data-tab="precios">Precios</button>
       <button data-tab="galeria">Galería</button>
       <button data-tab="testimonios">Testimonios</button>
+      <button data-tab="certificado">Certificado</button>
       <button data-tab="publicar">Publicar / Respaldo</button>
     </div>
     <div class="admin__body">
@@ -646,6 +772,31 @@
         <p class="muted">Agrega testimonios reales de asistentes (con su autorización). La sección aparece cuando hay al menos uno.</p>
         <div id="admTestis"></div>
         <button class="btn btn--ghost btn--sm" id="admAddTesti" type="button">+ Agregar testimonio</button>
+        <hr class="adm-hr">
+        <h4>Capturas de mensajes de alumnos</h4>
+        <p class="muted">Sube capturas de WhatsApp, comentarios o reseñas reales (tapa datos personales si es necesario).</p>
+        <label class="dropzone" id="dropzoneCap">
+          <input type="file" accept="image/*" multiple id="admCapFiles" hidden>
+          <span>💬 Toca o arrastra aquí las capturas</span>
+        </label>
+        <div class="adm-gallery" id="admCaptures"></div>
+      </div>
+      <!-- Certificado -->
+      <div class="admin__pane" data-pane="certificado">
+        <p class="muted">Estos datos se muestran en la vista previa del certificado. Si subes una foto del certificado real, se mostrará en lugar del diseño.</p>
+        <div class="grid2">
+          <label>Entidad que certifica<input data-field="certificado.emisor"></label>
+          <label>Intensidad<input data-field="certificado.intensidad"></label>
+          <label>Fecha en el certificado<input data-field="certificado.fecha"></label>
+        </div>
+        <label>Nombre del curso en el certificado<input data-field="certificado.titulo"></label>
+        <div class="admin__photo-row">
+          <div class="admin__avatar admin__avatar--wide" id="admCertPreview"><span>🎓</span></div>
+          <div>
+            <label class="btn btn--ghost btn--sm file-btn">Subir certificado real<input type="file" accept="image/*" id="admCertFile" hidden></label>
+            <button class="btn btn--ghost btn--sm" id="admCertRemove" type="button">Usar el diseño</button>
+          </div>
+        </div>
       </div>
       <!-- Publicar -->
       <div class="admin__pane" data-pane="publicar">

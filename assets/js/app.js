@@ -38,7 +38,15 @@
       anticipoPct: 50
     },
     galeria: [],      // [{ src, titulo }]
-    testimonios: []   // [{ nombre, profesion, texto, foto }]
+    testimonios: [],  // [{ nombre, profesion, texto, foto, estrellas }]
+    capturas: [],     // [{ src }]
+    certificado: {
+      emisor: 'CapCut Salud Pro',
+      titulo: 'CapCut para el Sector Salud: videos que generan confianza y ventas',
+      intensidad: '4 horas',
+      fecha: '28 de noviembre de 2026',
+      imagen: ''
+    }
   };
 
   let state = clone(DEFAULTS);
@@ -167,16 +175,34 @@
 
     // testimonios
     const ts = (state.testimonios || []).filter(t => t.texto && t.texto.trim());
-    $('#testimonios').hidden = ts.length === 0;
-    $('#testiGrid').innerHTML = ts.map(t => `
-      <article class="testi reveal is-visible">
-        <div class="testi__stars">★★★★★</div>
-        <p class="testi__text">“${esc(t.texto)}”</p>
+    const caps = state.capturas || [];
+    $('#testimonios').hidden = ts.length === 0 && caps.length === 0;
+    const stars = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
+    const starsOf = (t) => Math.max(1, Math.min(5, parseInt(t.estrellas, 10) || 5));
+    $('#testiGrid').innerHTML = ts.map((t, i) => `
+      <article class="testi${i === 0 && (ts.length - 2) % 3 === 0 ? ' testi--featured' : ''}">
+        <div class="testi__stars" aria-label="${starsOf(t)} de 5 estrellas">${stars(starsOf(t))}</div>
+        <p class="testi__text">${esc(t.texto)}</p>
         <div class="testi__who">
           ${t.foto ? `<img class="testi__avatar" src="${esc(t.foto)}" alt="">` : `<span class="testi__avatar">${esc(initials(t.nombre))}</span>`}
-          <div><strong>${esc(t.nombre || 'Asistente')}</strong><small>${esc(t.profesion || '')}</small></div>
+          <div><strong>${esc(t.nombre || 'Alumno(a)')}</strong><small>${esc(t.profesion || '')}</small></div>
+          <span class="testi__tag">Alumno(a)</span>
         </div>
       </article>`).join('');
+    const rs = $('#ratingSum');
+    if (ts.length) {
+      const avg = ts.reduce((a, t) => a + starsOf(t), 0) / ts.length;
+      rs.innerHTML = `<span class="rating__stars">${stars(Math.round(avg))}</span><b>${avg.toFixed(1).replace('.', ',')}</b><small>${ts.length} ${ts.length > 1 ? "opiniones" : "opinión"} de profesionales de la salud</small>`;
+      $('#heroRating').textContent = `${avg.toFixed(1).replace('.', ',')} de calificación de nuestros alumnos`;
+    } else { rs.innerHTML = ''; $('#heroRating').textContent = 'Cupos limitados'; }
+    $('#capturesWrap').hidden = caps.length === 0;
+    $('#capturesGrid').innerHTML = caps.map((c, i) => `<figure data-cap="${i}"><img src="${esc(c.src)}" alt="Mensaje de un alumno" loading="lazy"></figure>`).join('');
+
+    // certificado
+    const cert = state.certificado || {};
+    $('#certReal').hidden = !cert.imagen;
+    $('#certMock').hidden = !!cert.imagen;
+    if (cert.imagen) $('#certReal').src = cert.imagen;
 
     // enlaces
     const msg = `Hola 👋 quiero información del curso de CapCut para el sector salud (${state.config.fechaTexto}, ${state.config.ciudad}).`;
@@ -473,6 +499,23 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     lb.querySelector('figcaption').textContent = g.titulo || '';
     lb.hidden = false;
   });
+  $('#capturesGrid').addEventListener('click', (e) => {
+    const fig = e.target.closest('figure'); if (!fig) return;
+    lb.querySelector('img').src = state.capturas[+fig.dataset.cap].src;
+    lb.querySelector('figcaption').textContent = 'Mensaje de un alumno';
+    lb.hidden = false;
+  });
+  // Vista previa del certificado con el nombre del visitante
+  const certName = $('#certName');
+  $('#certNameInput').addEventListener('input', (e) => {
+    const v = e.target.value.trim();
+    certName.textContent = v || 'Tu nombre aquí';
+    certName.classList.toggle('is-typed', !!v);
+    if (v && !form.elements.nombre.value) form.elements.nombre.dataset.fromCert = '1';
+    if (form.elements.nombre.dataset.fromCert) form.elements.nombre.value = v;
+  });
+  form.elements.nombre.addEventListener('input', () => { delete form.elements.nombre.dataset.fromCert; });
+  $('#certCode').textContent = String(Math.floor(1000 + Math.random() * 8999));
   lb.addEventListener('click', (e) => { if (e.target === lb || e.target.closest('.lightbox__close')) lb.hidden = true; });
 
   /* =========================================================
@@ -532,6 +575,8 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     renderAdmInstr();
     renderAdmGallery();
     renderAdmTestis();
+    renderAdmCaptures();
+    renderAdmCert();
   }
 
   // Campos simples → guardado automático
@@ -662,12 +707,18 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
           <label>Nombre<input data-t="nombre" value="${esc(t.nombre)}"></label>
           <label>Profesión<input data-t="profesion" value="${esc(t.profesion)}"></label>
         </div>
+        <label>Calificación<select data-t="estrellas">${[5, 4, 3].map(n => `<option value="${n}"${(parseInt(t.estrellas, 10) || 5) === n ? ' selected' : ''}>${'★'.repeat(n)} (${n})</option>`).join('')}</select></label>
         <label>Testimonio<textarea rows="3" data-t="texto">${esc(t.texto)}</textarea></label>
       </div>`).join('') : '<p class="muted">Aún no hay testimonios.</p>';
   }
   $('#admAddTesti').addEventListener('click', () => {
-    state.testimonios.push({ nombre: '', profesion: '', texto: '', foto: '' });
+    state.testimonios.push({ nombre: '', profesion: '', texto: '', foto: '', estrellas: 5 });
     renderAdmTestis(); scheduleSave();
+  });
+  $('#admTestis').addEventListener('change', (e) => {
+    if (e.target.dataset.t !== 'estrellas') return;
+    state.testimonios[+e.target.closest('.adm-testi').dataset.i].estrellas = Number(e.target.value);
+    render(); scheduleSave();
   });
   $('#admTestis').addEventListener('input', (e) => {
     const k = e.target.dataset.t; if (!k) return;
@@ -688,6 +739,45 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     state.testimonios[i].foto = await readImage(f, 300);
     renderAdmTestis(); render(); persist(true);
   });
+
+  // Capturas de mensajes
+  function renderAdmCaptures() {
+    const c = state.capturas;
+    $('#admCaptures').innerHTML = c.length ? c.map((it, i) => `
+      <div class="adm-photo" data-i="${i}"><img src="${esc(it.src)}" alt="">
+        <div><div class="adm-photo__actions"><button type="button" class="del" data-cdel>Eliminar</button></div></div>
+      </div>`).join('') : '<p class="muted">Aún no hay capturas.</p>';
+  }
+  async function addCaptures(files) {
+    const list = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (!list.length) return;
+    toast(`Procesando ${list.length} captura(s)…`);
+    for (const f of list) { try { state.capturas.push({ src: await readImage(f, 1000) }); } catch { /* nada */ } }
+    renderAdmCaptures(); render(); persist(true);
+  }
+  $('#admCapFiles').addEventListener('change', (e) => { addCaptures(e.target.files); e.target.value = ''; });
+  const dzc = $('#dropzoneCap');
+  ['dragenter', 'dragover'].forEach(ev => dzc.addEventListener(ev, (e) => { e.preventDefault(); dzc.classList.add('is-over'); }));
+  ['dragleave', 'drop'].forEach(ev => dzc.addEventListener(ev, (e) => { e.preventDefault(); dzc.classList.remove('is-over'); }));
+  dzc.addEventListener('drop', (e) => addCaptures(e.dataTransfer.files));
+  $('#admCaptures').addEventListener('click', (e) => {
+    if (!e.target.matches('[data-cdel]')) return;
+    if (!confirm('¿Eliminar esta captura?')) return;
+    state.capturas.splice(+e.target.closest('.adm-photo').dataset.i, 1);
+    renderAdmCaptures(); render(); persist(false);
+  });
+
+  // Certificado real (opcional)
+  function renderAdmCert() {
+    $('#admCertPreview').innerHTML = state.certificado.imagen ? `<img src="${esc(state.certificado.imagen)}" alt="">` : '<span>🎓</span>';
+  }
+  $('#admCertFile').addEventListener('change', async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    state.certificado.imagen = await readImage(f, 1600, .88);
+    e.target.value = '';
+    renderAdmCert(); render(); persist(true);
+  });
+  $('#admCertRemove').addEventListener('click', () => { state.certificado.imagen = ''; renderAdmCert(); render(); persist(true); });
 
   // Publicar / respaldo
   $('#admExport').addEventListener('click', () => {

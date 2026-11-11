@@ -26,6 +26,7 @@ Abre `index.html` en el navegador, o publícalo en **Vercel** (recomendado, para
 ## Administrador
 - Botón **"Administrador"** al pie de la página, o entra a `tu-sitio/#admin`.
 - Clave: `123456` (se cambia en `assets/js/app.js`, constante `ADMIN_KEY`).
+- Pestañas **Testimonios** (opiniones con foto y estrellas + capturas de WhatsApp de alumnos) y **Certificado** (textos del certificado o foto del certificado real).
 - Desde ahí editas: WhatsApp, Instagram, lugar, fecha, cupos, precios y planes grupales,
   foto y biografía de la instructora, galería de cursos dictados y testimonios.
 
