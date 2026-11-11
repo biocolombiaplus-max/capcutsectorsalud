@@ -42,6 +42,22 @@ p{color:#A8B0CC;margin-bottom:22px;line-height:1.55}
       amount = p('amount'), desc = p('description'), plan = p('extra1');
   var info = {}; try { info = JSON.parse(localStorage.getItem('ccs_pago') || '{}') || {}; } catch(e){}
   if (info.wa) WA = String(info.wa).replace(/\D/g, '') || WA;
+
+  // Píxel de Meta: compra (solo con pago aprobado y una sola vez por referencia)
+  function purchase(value){
+    function fire(id){
+      id = String(id || '').replace(/\D/g, '');
+      if(!id) return;
+      var key = 'ccs_px_' + (ref || value);
+      try { if(localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch(e){}
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', id); fbq('track', 'PageView');
+      fbq('track', 'Purchase', { value: parseFloat(value) || 0, currency: 'COP', content_name: 'Curso CapCut Salud' + (info.plan ? ' · ' + info.plan : '') });
+    }
+    if(info.pixel) return fire(info.pixel);
+    fetch('data/contenido.json', { cache: 'no-store' }).then(function(r){ return r.json(); })
+      .then(function(d){ fire(d && d.config && d.config.metaPixel); }).catch(function(){});
+  }
   var card = document.getElementById('card'), ic = document.getElementById('ic'), tt = document.getElementById('tt'), sub = document.getElementById('sub');
   var cop = function(n){ return '$' + Math.round(Number(n) || 0).toLocaleString('es-CO').replace(/,/g, '.'); };
 
@@ -54,6 +70,7 @@ p{color:#A8B0CC;margin-bottom:22px;line-height:1.55}
   function render(){
     var st = status(), msg;
     if(st === 'ok'){
+      purchase(amount || info.pagado);
       card.className = 'card ok'; ic.textContent = '🎉'; tt.textContent = '¡Pago aprobado! Tu cupo está reservado';
       sub.textContent = 'Gracias por inscribirte al curso de CapCut para el sector salud. Confírmanos por WhatsApp para enviarte los detalles del evento.';
       msg = '✅ Hola, acabo de pagar mi inscripción al Curso de CapCut para el Sector Salud.';

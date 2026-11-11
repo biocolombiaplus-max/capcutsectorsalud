@@ -947,3 +947,103 @@ p { margin: 0 0 1em; }
   .venue__row { grid-template-columns: 1fr; }
   .venue__map { min-height: 280px; }
 }
+
+/* =========================================================
+   Bio Marketing: respaldo
+   ========================================================= */
+.bm-logo { width: 26px; height: 26px; border-radius: 50%; flex: none; }
+.brand__text { display: grid; line-height: 1.1; }
+.brand__by { font: 600 .68rem var(--font); color: var(--muted); letter-spacing: .04em; }
+.endorse {
+  display: inline-flex; align-items: center; gap: .6rem; margin-bottom: 1rem;
+  padding: .4rem 1rem .4rem .45rem; border-radius: 999px;
+  background: linear-gradient(90deg, rgba(123,92,255,.22), rgba(255,106,61,.14));
+  border: 1px solid rgba(160,120,255,.45); font-size: .86rem; color: #e9e4ff;
+  box-shadow: 0 10px 30px -12px rgba(123,92,255,.7); transition: transform .2s;
+}
+.endorse:hover { transform: translateY(-2px); }
+.endorse b { color: #fff; }
+
+.section--bm { background: radial-gradient(ellipse at 20% 50%, rgba(123,92,255,.22), transparent 55%), radial-gradient(ellipse at 90% 20%, rgba(255,106,61,.12), transparent 50%), var(--bg-2); }
+.bm-glow { position: absolute; inset: auto -10% -40% auto; width: 520px; height: 520px; background: conic-gradient(from 0deg, #7B2FF7, #E8622C, #7B2FF7); filter: blur(120px); opacity: .25; border-radius: 50%; pointer-events: none; }
+.bm { position: relative; display: grid; grid-template-columns: .7fr 1.3fr; gap: 60px; align-items: center; }
+.bm__brand { display: grid; justify-items: center; gap: 1.4rem; }
+.bm__logo-wrap { position: relative; width: min(280px, 70vw); aspect-ratio: 1; display: grid; place-items: center; }
+.bm__logo { width: 78%; height: auto; border-radius: 50%; position: relative; z-index: 1; box-shadow: 0 30px 70px -20px rgba(123,47,247,.7); animation: floaty2 6s ease-in-out infinite; }
+.bm__ring { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed rgba(200,160,255,.35); animation: rot 30s linear infinite; }
+.bm__ring::after { content: ""; position: absolute; top: 6%; left: 50%; width: 14px; height: 14px; border-radius: 50%; background: var(--yellow); box-shadow: 0 0 16px var(--yellow); }
+.bm__seal { font-weight: 800; font-size: .85rem; padding: .55em 1.1em; border-radius: 999px; background: rgba(0,229,199,.12); color: var(--aqua); border: 1px solid rgba(0,229,199,.4); }
+.bm__pillars { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin: 1.6rem 0; }
+.bm__pill { display: flex; gap: .8rem; padding: 1rem 1.1rem; border-radius: 18px; background: rgba(255,255,255,.04); border: 1px solid var(--line); transition: border-color .3s, transform .3s; }
+.bm__pill:hover { border-color: rgba(160,120,255,.5); transform: translateY(-3px); }
+.bm__pill > span { font-size: 1.5rem; }
+.bm__pill b { display: block; }
+.bm__pill small { color: var(--muted); font-size: .86rem; }
+.bm__cta { display: flex; flex-wrap: wrap; gap: .7rem; }
+.instr__org { display: inline-flex; align-items: center; gap: .5rem; font-weight: 700; font-size: .9rem; color: #d9ccff; padding: .35em .9em .35em .4em; border-radius: 999px; background: rgba(123,92,255,.14); border: 1px solid rgba(123,92,255,.4); margin-bottom: .6rem; }
+.footer__bm { display: inline-flex; align-items: center; gap: .55rem; margin-top: 1rem; padding: .45rem 1rem .45rem .45rem; border-radius: 999px; border: 1px solid var(--line); color: #cfd4ea; font-size: .88rem; }
+.cert__bm { width: 3.8cqw; height: 3.8cqw; border-radius: 50%; }
+
+/* =========================================================
+   Galería premium (bento)
+   ========================================================= */
+.section--gallery { background: linear-gradient(180deg, var(--bg-2), var(--bg)); }
+.gal-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; margin-top: 1rem; }
+.gal-stats:empty { display: none; }
+.gal-stats span { font-size: .85rem; font-weight: 700; padding: .45em 1em; border-radius: 999px; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+.bento { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 210px; gap: 14px; }
+.bento__item { position: relative; margin: 0; border-radius: 22px; overflow: hidden; cursor: zoom-in; border: 1px solid var(--line); background: #141b38; box-shadow: 0 24px 50px -26px rgba(0,0,0,.8); outline: none; }
+.bento__item img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.7,.2,1), filter .4s; }
+.bento__item::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(5,8,18,.85)); opacity: .85; transition: opacity .4s; }
+.bento__item:hover img, .bento__item:focus-visible img { transform: scale(1.07); }
+.bento__item:focus-visible { box-shadow: 0 0 0 3px var(--yellow); }
+.bento__item--hero { grid-column: span 2; grid-row: span 2; border: 2px solid transparent; background: linear-gradient(#141b38, #141b38) padding-box, var(--grad) border-box; }
+.bento__item figcaption { position: absolute; left: 16px; right: 16px; bottom: 14px; z-index: 1; font-weight: 700; font-size: .92rem; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+.bento__item--hero figcaption { font: 700 1.2rem var(--display); }
+.bento__zoom { position: absolute; top: 12px; right: 12px; z-index: 1; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: rgba(7,11,24,.6); border: 1px solid rgba(255,255,255,.25); opacity: 0; transform: scale(.8); transition: .3s; backdrop-filter: blur(6px); }
+.bento__item:hover .bento__zoom { opacity: 1; transform: none; }
+.bento__more { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; font: 800 2.4rem var(--display); background: rgba(7,11,24,.65); backdrop-filter: blur(3px); }
+/* acomodo según cantidad de fotos */
+.bento--n1 { grid-template-columns: 1fr; grid-auto-rows: 440px; }
+.bento--n1 .bento__item--hero { grid-column: auto; grid-row: auto; }
+.bento--n2 { grid-template-columns: 2fr 1fr; grid-auto-rows: 420px; }
+.bento--n2 .bento__item--hero { grid-column: auto; grid-row: auto; }
+.bento--n3 { grid-template-columns: 2fr 1fr; }
+.bento--n3 .bento__item--hero { grid-column: 1; grid-row: span 2; }
+.bento--n4 .bento__item:last-child { grid-column: span 2; }
+.bento--n5 .bento__item--hero { grid-row: span 2; }
+.bento--n6 .bento__item:nth-child(n+6) { grid-column: span 2; }
+.gal-more { text-align: center; margin-top: 1.6rem; }
+
+/* Visor */
+.lightbox__nav { position: absolute; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: rgba(7,11,24,.6); color: #fff; font-size: 2rem; line-height: 1; cursor: pointer; z-index: 2; backdrop-filter: blur(8px); }
+.lightbox__nav:hover { background: rgba(255,46,147,.4); }
+.lightbox__nav--prev { left: 18px; }
+.lightbox__nav--next { right: 18px; }
+.lightbox__count { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-weight: 700; font-size: .9rem; color: #cfd4ea; background: rgba(7,11,24,.6); padding: .3em .9em; border-radius: 999px; }
+.lightbox__count:empty { display: none; }
+
+@media (max-width: 1020px) {
+  .bm { grid-template-columns: 1fr; gap: 30px; text-align: center; }
+  .bm__pillars { text-align: left; }
+  .bm__cta { justify-content: center; }
+}
+@media (max-width: 760px) {
+  .bento, .bento--n2, .bento--n3 { grid-template-columns: 1fr 1fr; grid-auto-rows: 160px; }
+  .bento--n1 { grid-auto-rows: 260px; }
+  .bento__item--hero, .bento--n2 .bento__item--hero, .bento--n3 .bento__item--hero { grid-column: span 2; grid-row: span 2; }
+  .bento--n4 .bento__item:last-child, .bento--n6 .bento__item:nth-child(n+6) { grid-column: auto; }
+  .bm__pillars { grid-template-columns: 1fr; }
+  .lightbox__nav { width: 44px; height: 44px; font-size: 1.6rem; }
+  .lightbox__nav--prev { left: 8px; } .lightbox__nav--next { right: 8px; }
+  .endorse { font-size: .8rem; }
+}
+.brand__text { display: inline-block; line-height: 1.15; }
+.brand__by { display: block; }
+.bento--n6 .bento__item:nth-child(n+6) { grid-column: span 4; }
+.bento--n7 .bento__item:nth-child(n+6) { grid-column: span 2; }
+.bento--all { grid-auto-flow: dense; }
+@media (max-width: 760px) {
+  .bento--n6 .bento__item:nth-child(n+6), .bento--n7 .bento__item:nth-child(n+6) { grid-column: auto; }
+  .bento--n6 .bento__item:nth-child(6), .bento--n4 .bento__item:last-child { grid-column: span 2; }
+}

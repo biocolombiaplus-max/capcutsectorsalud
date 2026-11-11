@@ -18,10 +18,13 @@
     ['inscripcion', 'Inscripción (fondo)']
   ];
 
+  let galExpanded = false;
   const DEFAULTS = {
     config: {
       whatsapp: '573505457420',
       instagram: '',
+      metaPixel: '',   // ID del Píxel de Meta (solo números)
+      bmUrl: '',       // sitio web de Bio Marketing
       ciudad: 'Cúcuta',
       lugar: 'Qu1nce Workclub · Los Caobos, Cúcuta',
       lugarNombre: 'Qu1nce Workclub',
@@ -65,7 +68,7 @@
     testimonios: [],  // [{ nombre, profesion, texto, foto, estrellas }]
     capturas: [],     // [{ src }]
     certificado: {
-      emisor: 'CapCut Salud Pro',
+      emisor: 'Bio Marketing · CapCut Salud Pro',
       titulo: 'CapCut para el Sector Salud: videos que generan confianza y ventas',
       intensidad: '4 horas',
       fecha: '28 de noviembre de 2026',
@@ -191,11 +194,25 @@
     // galería
     const gal = state.galeria || [];
     $('#galeria').hidden = gal.length === 0;
-    $('#gallery').innerHTML = gal.map((g, i) => `
-      <figure data-idx="${i}">
-        <img src="${esc(g.src)}" alt="${esc(g.titulo || 'Foto de un taller anterior')}" loading="lazy">
+    const LIMIT = 7;
+    const shown = galExpanded ? gal : gal.slice(0, LIMIT);
+    const bento = $('#gallery');
+    bento.className = galExpanded ? 'bento bento--all' : 'bento bento--n' + shown.length;
+    bento.innerHTML = shown.map((g, i) => `
+      <figure class="bento__item${i === 0 ? ' bento__item--hero' : ''}" data-idx="${i}" tabindex="0" role="button" aria-label="Ver foto: ${esc(g.titulo || 'taller anterior')}">
+        <img src="${esc(g.src)}" alt="${esc(g.titulo || 'Foto de un taller anterior de Bio Marketing')}" loading="lazy">
+        <span class="bento__zoom" aria-hidden="true">⤢</span>
         ${g.titulo ? `<figcaption>${esc(g.titulo)}</figcaption>` : ''}
+        ${!galExpanded && i === LIMIT - 1 && gal.length > LIMIT ? `<span class="bento__more">+${gal.length - LIMIT}</span>` : ''}
       </figure>`).join('');
+    $('#galStats').innerHTML = gal.length ? `<span>📸 ${gal.length} foto${gal.length > 1 ? 's' : ''} de talleres reales</span><span>🎓 Profesionales certificados</span><span>📍 ${esc(state.config.ciudad)}</span>` : '';
+    $('#galMoreWrap').hidden = gal.length <= LIMIT;
+    $('#galMore').textContent = galExpanded ? 'Ver menos' : `Ver las ${gal.length} fotos`;
+
+    // sitio de Bio Marketing
+    const bmUrl = String(state.config.bmUrl || '').trim();
+    $('#bmSite').hidden = !bmUrl;
+    if (bmUrl) $('#bmSite').href = /^https?:/.test(bmUrl) ? bmUrl : 'https://' + bmUrl;
 
     // testimonios
     const ts = (state.testimonios || []).filter(t => t.texto && t.texto.trim());
@@ -266,6 +283,24 @@
     updateTotal();
     observeReveals();
   }
+
+  /* ---------- Píxel de Meta ----------
+     Se activa solo cuando hay un ID en config.metaPixel (administrador o data/contenido.json). */
+  let pixelOn = false;
+  function initPixel() {
+    const id = String(state.config.metaPixel || '').replace(/\D/g, '');
+    if (!id || pixelOn) return;
+    pixelOn = true;
+    /* eslint-disable */
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    /* eslint-enable */
+    fbq('init', id);
+    fbq('track', 'PageView');
+    fbq('track', 'ViewContent', { content_name: 'Curso CapCut Salud', content_category: 'Curso', value: state.precios.individual, currency: 'COP' });
+  }
+  function track(ev, data) { try { if (pixelOn && window.fbq) fbq('track', ev, data || {}); } catch { /* nada */ } }
+
+  $('#waFloat').addEventListener('click', () => track('Contact', { content_name: 'Botón flotante WhatsApp' }));
 
   /* ---------- Copiar dirección ---------- */
   $('#copyAddr').addEventListener('click', async () => {
@@ -427,6 +462,7 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     const c = calc();
     const nombre = waForm.elements.nombre.value.trim(), cel = waForm.elements.celular.value.trim();
     form.elements.nombre.value = nombre; form.elements.celular.value = cel;
+    track('Contact', { content_name: 'Registro por WhatsApp · ' + c.plan, value: c.pay, currency: 'COP' });
     window.open(waLink(waText(c, nombre, cel, form.elements.profesion.value)), '_blank', 'noopener');
     waModal.hidden = true;
   });
@@ -535,9 +571,10 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     try {
       localStorage.setItem('ccs_pago', JSON.stringify({
         plan: c.plan, personas: c.n, total: c.total, pagado: c.pay, saldo: c.saldo, full: c.full,
-        nombre: f.nombre.value.trim(), celular: f.celular.value.trim(), profesion: f.profesion.value, wa: state.config.whatsapp
+        nombre: f.nombre.value.trim(), celular: f.celular.value.trim(), profesion: f.profesion.value, wa: state.config.whatsapp, pixel: state.config.metaPixel || ''
       }));
     } catch { /* nada */ }
+    track('InitiateCheckout', { content_name: 'Curso CapCut Salud · ' + c.plan, value: c.pay, currency: 'COP', num_items: c.n });
     busy(true);
     // Vigilante: si en 35 s no abrió el pago, se ofrece reintentar o recibir el link por WhatsApp
     const watchdog = setTimeout(() => {
@@ -583,18 +620,42 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
 
   /* ---------- Lightbox ---------- */
   const lb = $('#lightbox');
+  let lbList = [], lbIdx = 0;
+  function lbShow() {
+    const it = lbList[lbIdx]; if (!it) return;
+    lb.querySelector('img').src = it.src;
+    lb.querySelector('figcaption').textContent = it.titulo || '';
+    $('#lbCount').textContent = lbList.length > 1 ? `${lbIdx + 1} / ${lbList.length}` : '';
+    $$('.lightbox__nav', lb).forEach(b => (b.hidden = lbList.length < 2));
+  }
+  function lbOpen(list, idx) { lbList = list; lbIdx = idx; lbShow(); lb.hidden = false; }
+  function lbMove(d) { if (lbList.length < 2) return; lbIdx = (lbIdx + d + lbList.length) % lbList.length; lbShow(); }
   $('#gallery').addEventListener('click', (e) => {
     const fig = e.target.closest('figure'); if (!fig) return;
-    const g = state.galeria[+fig.dataset.idx];
-    lb.querySelector('img').src = g.src;
-    lb.querySelector('figcaption').textContent = g.titulo || '';
-    lb.hidden = false;
+    lbOpen(state.galeria, +fig.dataset.idx);
   });
+  $('#gallery').addEventListener('keydown', (e) => {
+    const fig = e.target.closest('figure');
+    if (fig && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); lbOpen(state.galeria, +fig.dataset.idx); }
+  });
+  $('#galMore').addEventListener('click', () => { galExpanded = !galExpanded; render(); });
   $('#capturesGrid').addEventListener('click', (e) => {
     const fig = e.target.closest('figure'); if (!fig) return;
-    lb.querySelector('img').src = state.capturas[+fig.dataset.cap].src;
-    lb.querySelector('figcaption').textContent = 'Mensaje de un alumno';
-    lb.hidden = false;
+    lbOpen(state.capturas.map(c => ({ src: c.src, titulo: 'Mensaje de un alumno' })), +fig.dataset.cap);
+  });
+  $('.lightbox__nav--prev', lb).addEventListener('click', (e) => { e.stopPropagation(); lbMove(-1); });
+  $('.lightbox__nav--next', lb).addEventListener('click', (e) => { e.stopPropagation(); lbMove(1); });
+  document.addEventListener('keydown', (e) => {
+    if (lb.hidden) return;
+    if (e.key === 'ArrowLeft') lbMove(-1);
+    if (e.key === 'ArrowRight') lbMove(1);
+  });
+  let touchX = null;
+  lb.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', (e) => {
+    if (touchX == null) return;
+    const dx = e.changedTouches[0].clientX - touchX; touchX = null;
+    if (Math.abs(dx) > 50) lbMove(dx < 0 ? 1 : -1);
   });
   // Vista previa del certificado con el nombre del visitante
   const certName = $('#certName');
@@ -936,5 +997,5 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
   /* ---------- Inicio ---------- */
   render();          // pinta valores por defecto de inmediato
   startCountdown();
-  loadContent().then(() => { render(); startCountdown(); });
+  loadContent().then(() => { render(); startCountdown(); initPixel(); });
 })();

@@ -32,7 +32,7 @@
   <div class="container nav__inner">
     <a href="#inicio" class="brand" aria-label="CapCut Salud Pro, inicio">
       <span class="brand__mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12l9-6z" fill="currentColor"/></svg></span>
-      <span class="brand__text">CapCut <b>Salud Pro</b></span>
+      <span class="brand__text">CapCut <b>Salud Pro</b><small class="brand__by">por Bio Marketing</small></span>
     </a>
     <nav class="nav__links" id="navLinks">
       <a href="#metodo">Método</a>
@@ -58,6 +58,7 @@
 
   <div class="container hero__inner">
     <div class="hero__copy reveal">
+      <a href="#respaldo" class="endorse"><img src="assets/img/biomarketing.png" alt="Bio Marketing" class="bm-logo" width="28" height="28"><span>Un programa respaldado por <b>Bio Marketing</b></span></a>
       <div class="chip-row">
         <span class="chip chip--fuchsia">Exclusivo sector salud</span>
         <span class="chip chip--aqua">Presencial · <span data-bind="config.ciudad">Cúcuta</span></span>
@@ -449,7 +450,7 @@
           <div class="cert__corner cert__corner--tl"></div><div class="cert__corner cert__corner--tr"></div>
           <div class="cert__corner cert__corner--bl"></div><div class="cert__corner cert__corner--br"></div>
           <div class="cert__top">
-            <div class="cert__brand"><span class="cert__logo"><svg viewBox="0 0 24 24"><path d="M9 6v12l9-6z" fill="currentColor"/></svg></span><span data-bind="certificado.emisor">CapCut Salud Pro</span></div>
+            <div class="cert__brand"><img src="assets/img/biomarketing.png" alt="" class="cert__bm"><span data-bind="certificado.emisor">Bio Marketing · CapCut Salud Pro</span></div>
             <div class="cert__code">N.º CSP-2026-<span id="certCode">0001</span></div>
           </div>
           <div class="cert__title">Certificado</div>
@@ -493,6 +494,35 @@
   </div>
 </section>
 
+<!-- ============ RESPALDO BIO MARKETING ============ -->
+<section class="section section--bm" id="respaldo">
+  <div class="bm-glow"></div>
+  <div class="container bm">
+    <div class="bm__brand reveal">
+      <div class="bm__logo-wrap">
+        <img src="assets/img/biomarketing.png" alt="Logo de Bio Marketing" class="bm__logo" width="180" height="180">
+        <span class="bm__ring"></span>
+      </div>
+      <div class="bm__seal">✔ Respaldo oficial del curso</div>
+    </div>
+    <div class="bm__copy reveal">
+      <span class="eyebrow">Quién respalda este curso</span>
+      <h2>Un programa de <span class="grad-text">Bio Marketing</span></h2>
+      <p class="section__sub">Bio Marketing es una agencia de marketing digital e inteligencia artificial que trabaja de la mano con el <b>sector salud</b>: estrategia de redes, anuncios, software con IA para laboratorios clínicos y formación práctica. Este taller reúne esa experiencia para que tú la apliques en tu consulta.</p>
+      <div class="bm__pillars">
+        <div class="bm__pill"><span>🩺</span><div><b>Marketing médico</b><small>Redes sociales y contenido que convierten seguidores en pacientes.</small></div></div>
+        <div class="bm__pill"><span>🧪</span><div><b>Software con IA para salud</b><small>Creadores de Biosoft, sistema con IA para laboratorios clínicos.</small></div></div>
+        <div class="bm__pill"><span>📣</span><div><b>Anuncios en Meta</b><small>Campañas en Instagram y Facebook para atraer pacientes.</small></div></div>
+        <div class="bm__pill"><span>🎓</span><div><b>Cursos y talleres de IA</b><small>Capacitación práctica para equipos y profesionales.</small></div></div>
+      </div>
+      <div class="bm__cta">
+        <a href="#inscripcion" class="btn btn--pay">Quiero formarme con Bio Marketing</a>
+        <a href="#" id="bmSite" class="btn btn--ghost" target="_blank" rel="noopener" hidden>Conoce Bio Marketing ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ INSTRUCTORA ============ -->
 <section class="section" id="instructora">
   <div class="container instr">
@@ -506,6 +536,7 @@
     <div class="instr__copy reveal">
       <span class="eyebrow">Quién te enseña</span>
       <h2 data-bind="instructora.nombre">Diany Amaya</h2>
+      <p class="instr__org"><img src="assets/img/biomarketing.png" alt="Bio Marketing" class="bm-logo" width="28" height="28"> Instructora de Bio Marketing</p>
       <p class="instr__role" data-bind="instructora.rol">Estratega de marketing digital y creación de contenido para el sector salud</p>
       <div class="instr__bio" id="instrBio"></div>
       <ul class="instr__list" id="instrLogros"></ul>
@@ -515,14 +546,16 @@
 </section>
 
 <!-- ============ GALERÍA ============ -->
-<section class="section section--alt" id="galeria" hidden>
+<section class="section section--gallery" id="galeria" hidden>
   <div class="container">
     <div class="section__head reveal">
-      <span class="eyebrow">Ediciones anteriores</span>
+      <span class="eyebrow">Ediciones anteriores · Bio Marketing</span>
       <h2>Así se viven <span class="grad-text">nuestros talleres</span></h2>
       <p class="section__sub">Profesionales reales aprendiendo, creando y llevándose su certificado.</p>
+      <div class="gal-stats" id="galStats"></div>
     </div>
-    <div class="gallery" id="gallery"></div>
+    <div class="bento" id="gallery"></div>
+    <div class="gal-more" id="galMoreWrap" hidden><button class="btn btn--ghost" id="galMore" type="button"></button></div>
   </div>
 </section>
 
@@ -779,6 +812,7 @@
     <div>
       <a href="#inicio" class="brand"><span class="brand__mark"><svg viewBox="0 0 24 24"><path d="M9 6v12l9-6z" fill="currentColor"/></svg></span><span class="brand__text">CapCut <b>Salud Pro</b></span></a>
       <p class="footer__txt">Formación en contenido digital para profesionales de la salud · <span data-bind="config.ciudad">Cúcuta</span>, Colombia.</p>
+      <a href="#respaldo" class="footer__bm"><img src="assets/img/biomarketing.png" alt="Bio Marketing" class="bm-logo" width="28" height="28"><span>Un programa de <b>Bio Marketing</b></span></a>
     </div>
     <div class="footer__links">
       <a href="#temario">Temario</a><a href="#precios">Inversión</a><a href="#faq">FAQ</a>
@@ -806,6 +840,9 @@
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" hidden>
   <button class="lightbox__close" aria-label="Cerrar">✕</button>
+  <button class="lightbox__nav lightbox__nav--prev" aria-label="Foto anterior">‹</button>
+  <button class="lightbox__nav lightbox__nav--next" aria-label="Foto siguiente">›</button>
+  <span class="lightbox__count" id="lbCount"></span>
   <figure><img alt=""><figcaption></figcaption></figure>
 </div>
 
@@ -883,6 +920,8 @@
         <div class="grid2">
           <label>WhatsApp (con indicativo, sin +)<input data-field="config.whatsapp" placeholder="573001234567"></label>
           <label>Instagram (usuario o URL)<input data-field="config.instagram" placeholder="@tuusuario"></label>
+          <label>ID del Píxel de Meta (solo números)<input data-field="config.metaPixel" inputmode="numeric" placeholder="Ej: 123456789012345"></label>
+          <label>Sitio web de Bio Marketing<input data-field="config.bmUrl" placeholder="https://…"></label>
           <label>Ciudad<input data-field="config.ciudad"></label>
           <label>Lugar (texto corto)<input data-field="config.lugar"></label>
           <label>Nombre de la sede<input data-field="config.lugarNombre"></label>
@@ -925,7 +964,7 @@
       </div>
       <!-- Galería -->
       <div class="admin__pane" data-pane="galeria">
-        <p class="muted">Sube fotos de cursos ya dictados. Se optimizan automáticamente. La sección aparece en la página cuando hay al menos una foto.</p>
+        <p class="muted">Sube fotos de cursos ya dictados. Se optimizan automáticamente. <b>La primera foto sale grande y destacada</b> (usa las flechas para ordenarlas). Escribe una descripción corta, por ejemplo: “Taller para odontólogos · Cúcuta 2026”. La sección aparece cuando hay al menos una foto.</p>
         <label class="dropzone" id="dropzone">
           <input type="file" accept="image/*" multiple id="admGalFiles" hidden>
           <span>📷 Toca o arrastra aquí tus fotos</span>
