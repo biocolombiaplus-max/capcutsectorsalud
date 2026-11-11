@@ -435,6 +435,85 @@ p { margin: 0 0 1em; }
 .publish-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
 .admin__toast { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--aqua); color: #04121a; font-weight: 800; padding: .7em 1.3em; border-radius: 999px; box-shadow: 0 10px 30px -8px rgba(0,229,199,.6); }
 
+/* ---------- Pago: modo, resumen y botones llamativos ---------- */
+.btn--pay {
+  position: relative; overflow: hidden; isolation: isolate;
+  background: linear-gradient(110deg, #FF2E93, #FF6A3D 55%, #FFD60A); color: #1a0613;
+  box-shadow: 0 14px 34px -8px rgba(255,46,147,.7), inset 0 1px 0 rgba(255,255,255,.4);
+  animation: glowPay 2.6s ease-in-out infinite;
+}
+.btn--pay::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -120%; width: 60%; z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: skewX(-20deg); animation: shine 3.2s ease-in-out infinite;
+}
+.btn--pay:disabled { opacity: .75; cursor: progress; animation: none; }
+@keyframes shine { 0%, 55% { left: -120%; } 100% { left: 160%; } }
+@keyframes glowPay { 50% { box-shadow: 0 18px 44px -6px rgba(255,46,147,.9), 0 0 0 6px rgba(255,214,10,.12), inset 0 1px 0 rgba(255,255,255,.4); } }
+.btn--wa {
+  background: linear-gradient(135deg, #25D366, #128C7E); color: #fff;
+  box-shadow: 0 14px 30px -10px rgba(37,211,102,.75), inset 0 1px 0 rgba(255,255,255,.3);
+  animation: waPulse 2.4s infinite;
+}
+.btn--wa:hover { box-shadow: 0 18px 40px -8px rgba(37,211,102,.9); }
+.btn--wa .wa-ico { width: 22px; height: 22px; }
+@keyframes waPulse { 0% { box-shadow: 0 0 0 0 rgba(37,211,102,.5), 0 14px 30px -10px rgba(18,184,91,.7); } 70% { box-shadow: 0 0 0 12px rgba(37,211,102,0), 0 14px 30px -10px rgba(18,184,91,.7); } 100% { box-shadow: 0 0 0 0 rgba(37,211,102,0), 0 14px 30px -10px rgba(18,184,91,.7); } }
+.btn--lg.btn--pay, .btn--lg.btn--wa { white-space: normal; text-align: center; line-height: 1.25; }
+
+.paymode { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.paymode[hidden] { display: none !important; }
+.paymode__opt {
+  text-align: left; padding: .9rem 1rem; border-radius: 14px; cursor: pointer;
+  border: 1.5px solid var(--line); background: rgba(255,255,255,.04); color: var(--text); font: inherit;
+  transition: border-color .2s, background .2s, transform .2s; position: relative;
+}
+.paymode__opt:hover { transform: translateY(-2px); }
+.paymode__opt b { display: block; font-size: .95rem; padding-right: 22px; }
+.paymode__opt small { display: block; color: var(--muted); font-size: .78rem; line-height: 1.35; margin-top: .2rem; }
+.paymode__opt::after { content: ""; position: absolute; top: .9rem; right: .9rem; width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); }
+.paymode__opt.is-on { border-color: var(--yellow); background: rgba(255,214,10,.08); }
+.paymode__opt.is-on::after { border-color: var(--yellow); background: radial-gradient(circle, var(--yellow) 45%, transparent 50%); }
+.promo-note { margin: 0; padding: .8rem 1rem; border-radius: 12px; background: rgba(255,46,147,.1); border: 1px solid rgba(255,46,147,.35); font-size: .88rem; color: #ffd0e6; }
+
+.summary { border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,214,10,.35); background: rgba(255,214,10,.04); }
+.summary__row { display: flex; justify-content: space-between; gap: 1rem; padding: .6rem 1.1rem; font-size: .9rem; border-bottom: 1px dashed rgba(255,255,255,.08); }
+.summary__row span { color: var(--muted); }
+.summary__row[hidden] { display: none !important; }
+.summary__pay { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .9rem 1.1rem; background: linear-gradient(90deg, rgba(255,46,147,.16), rgba(255,214,10,.14)); }
+.summary__pay span { font-weight: 700; font-size: .92rem; }
+.summary__pay strong { font: 800 1.6rem var(--display); color: var(--yellow); }
+
+.paylogos { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .4rem; font-size: .78rem; color: var(--muted); margin-top: -.3rem; }
+.paylogos i { font-style: normal; font-weight: 800; padding: .2em .6em; border-radius: 6px; background: rgba(255,255,255,.07); border: 1px solid var(--line); color: #dfe3f5; letter-spacing: .02em; }
+.or { display: flex; align-items: center; gap: .8rem; color: var(--muted); font-size: .8rem; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.hl-y { color: var(--yellow); }
+.plan__desc b { font-weight: 800; }
+
+/* Modal WhatsApp */
+.wa-modal form { display: grid; gap: .8rem; margin-top: 1rem; }
+.wa-modal__ico { width: 72px; height: 72px; margin: 0 auto .8rem; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #25D366, #128C7E); box-shadow: 0 0 0 10px rgba(37,211,102,.12); }
+.wa-modal__ico .wa-ico { width: 38px; height: 38px; color: #fff; }
+.wa-modal__sum { text-align: left; font-size: .86rem; padding: .8rem 1rem; border-radius: 12px; background: rgba(255,255,255,.04); border: 1px solid var(--line); margin-top: .8rem; display: grid; gap: .25rem; }
+.wa-modal__sum div { display: flex; justify-content: space-between; gap: .8rem; }
+.wa-modal__sum span { color: var(--muted); }
+.modal input.is-invalid { border-color: #ff5470; }
+.stack { display: grid; gap: .6rem; margin-top: 1rem; }
+
+/* Cargando pago */
+.pay-loader { position: fixed; inset: 0; z-index: 130; display: grid; place-items: center; background: rgba(3,5,12,.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); text-align: center; }
+.pay-loader > div { display: grid; gap: .5rem; justify-items: center; }
+.pay-loader small { color: var(--muted); }
+.spinner { width: 54px; height: 54px; border-radius: 50%; border: 4px solid rgba(255,255,255,.12); border-top-color: var(--fuchsia); border-right-color: var(--yellow); animation: rot .9s linear infinite; margin-bottom: .4rem; }
+@keyframes rot { to { transform: rotate(360deg); } }
+/* ePayco siempre encima */
+[id*="epayco"], [class*="epayco"], #ep-modal, .epayco-modal, #lightbox-epayco { z-index: 99999 !important; }
+
+@media (max-width: 640px) {
+  .paymode { grid-template-columns: 1fr; }
+  .summary__pay strong { font-size: 1.35rem; }
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1020px) {
   .hero__inner, .temario, .instr, .cta { grid-template-columns: 1fr; }

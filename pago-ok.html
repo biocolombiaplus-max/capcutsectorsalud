@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estado del pago · CapCut Salud Pro</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Sora:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:grid;place-items:center;padding:24px 16px;background:radial-gradient(circle at 10% 0%,rgba(255,46,147,.35),transparent 45%),radial-gradient(circle at 95% 100%,rgba(0,229,199,.28),transparent 45%),#070B18;color:#F4F6FF;font-family:'Plus Jakarta Sans',system-ui,sans-serif;text-align:center}
+.card{max-width:520px;width:100%;background:rgba(12,18,38,.88);border:1px solid rgba(255,255,255,.1);border-radius:28px;padding:40px 26px;box-shadow:0 30px 80px -20px rgba(0,0,0,.7);backdrop-filter:blur(14px)}
+.ic{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;margin:0 auto 22px;font-size:2.8rem;background:rgba(255,255,255,.06)}
+.ok .ic{background:linear-gradient(135deg,#00E5C7,#12B85B);box-shadow:0 0 0 12px rgba(0,229,199,.14)}
+.pend .ic{background:#FFD60A;box-shadow:0 0 0 12px rgba(255,214,10,.15)}
+.bad .ic{background:#FF2E93;box-shadow:0 0 0 12px rgba(255,46,147,.15)}
+h1{font-family:Sora,sans-serif;font-size:1.9rem;line-height:1.15;margin-bottom:12px}
+p{color:#A8B0CC;margin-bottom:22px;line-height:1.55}
+.det{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px 18px;text-align:left;font-size:.9rem;margin-bottom:24px;display:grid;gap:8px}
+.det div{display:flex;justify-content:space-between;gap:12px}
+.det span{color:#A8B0CC}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;border-radius:999px;font-weight:800;text-decoration:none;color:#fff;margin-bottom:10px;font-size:1rem}
+.wa{background:linear-gradient(135deg,#25D366,#128C7E);box-shadow:0 12px 30px -8px rgba(37,211,102,.7)}
+.gh{border:1px solid rgba(255,255,255,.2);color:#F4F6FF}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="ic" id="ic">⏳</div>
+  <h1 id="tt">Verificando tu pago…</h1>
+  <p id="sub">Un momento por favor.</p>
+  <div class="det" id="det" hidden></div>
+  <a class="btn wa" id="wa" href="#" target="_blank" rel="noopener">Confirmar por WhatsApp</a>
+  <a class="btn gh" href="./">Volver a la página</a>
+</div>
+<script>
+(function(){
+  var WA = '573505457420';
+  var q = new URLSearchParams(location.search);
+  function p(k){ return q.get('x_' + k) || q.get(k) || ''; }
+  var ref = p('ref_payco'), state = (p('transaction_state') || p('respuesta')).toLowerCase(), code = p('cod_response'),
+      amount = p('amount'), desc = p('description'), plan = p('extra1');
+  var info = {}; try { info = JSON.parse(localStorage.getItem('ccs_pago') || '{}') || {}; } catch(e){}
+  if (info.wa) WA = String(info.wa).replace(/\D/g, '') || WA;
+  var card = document.getElementById('card'), ic = document.getElementById('ic'), tt = document.getElementById('tt'), sub = document.getElementById('sub');
+  var cop = function(n){ return '$' + Math.round(Number(n) || 0).toLocaleString('es-CO').replace(/,/g, '.'); };
+
+  function status(){
+    if(!ref && !state && !code) return 'none';
+    if(code === '1' || state.indexOf('acept') === 0) return 'ok';
+    if(code === '3' || state.indexOf('pend') === 0) return 'pend';
+    return 'bad';
+  }
+  function render(){
+    var st = status(), msg;
+    if(st === 'ok'){
+      card.className = 'card ok'; ic.textContent = '🎉'; tt.textContent = '¡Pago aprobado! Tu cupo está reservado';
+      sub.textContent = 'Gracias por inscribirte al curso de CapCut para el sector salud. Confírmanos por WhatsApp para enviarte los detalles del evento.';
+      msg = '✅ Hola, acabo de pagar mi inscripción al Curso de CapCut para el Sector Salud.';
+    } else if(st === 'pend'){
+      card.className = 'card pend'; ic.textContent = '⏳'; tt.textContent = 'Pago pendiente';
+      sub.textContent = 'Tu banco aún está procesando el pago. Te confirmaremos apenas se apruebe.';
+      msg = '⏳ Hola, hice el pago del Curso de CapCut para el Sector Salud y aparece pendiente.';
+    } else if(st === 'bad'){
+      card.className = 'card bad'; ic.textContent = '✖'; tt.textContent = 'El pago no se completó';
+      sub.textContent = 'No se realizó ningún cobro. Puedes intentarlo de nuevo o escribirnos y te ayudamos.';
+      msg = 'Hola, intenté pagar el Curso de CapCut para el Sector Salud pero el pago no se completó. ¿Me ayudan?';
+    } else {
+      ic.textContent = '💳'; tt.textContent = 'Estado de tu pago';
+      sub.textContent = 'Esta página se activa al completar el pago con ePayco. Si ya pagaste, avísanos por WhatsApp.';
+      msg = 'Hola, ya realicé el pago del Curso de CapCut para el Sector Salud.';
+    }
+    var rows = [];
+    if(info.nombre) rows.push(['Nombre', info.nombre]);
+    if(plan || info.plan) rows.push(['Plan', (plan || info.plan) + (info.personas ? ' · ' + info.personas + ' persona(s)' : '')]);
+    if(amount){ rows.push(['Valor pagado', cop(amount)]); } else if(info.pagado){ rows.push(['Valor', cop(info.pagado)]); }
+    if(info.saldo > 0) rows.push(['Saldo el día del curso', cop(info.saldo)]);
+    if(ref) rows.push(['Ref. ePayco', ref]);
+    if(rows.length){
+      var det = document.getElementById('det'); det.hidden = false;
+      det.innerHTML = rows.map(function(){ return '<div><span></span><b></b></div>'; }).join('');
+      det.querySelectorAll('div').forEach(function(d, i){ d.firstChild.textContent = rows[i][0]; d.lastChild.textContent = rows[i][1]; });
+      msg += '\n\n' + rows.map(function(r){ return '• ' + r[0] + ': ' + r[1]; }).join('\n');
+    }
+    document.getElementById('wa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
+  }
+  // ePayco a veces solo envía ?ref_payco=… : consultamos el estado de la transacción
+  if(ref && !state && !code){
+    fetch('https://secure.epayco.co/validation/v1/reference/' + encodeURIComponent(ref))
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        var d = j && j.data || {};
+        state = String(d.x_transaction_state || '').toLowerCase(); code = String(d.x_cod_response || '');
+        amount = amount || d.x_amount; desc = desc || d.x_description; plan = plan || d.x_extra1;
+      })
+      .catch(function(){})
+      .then(render);
+  } else render();
+})();
+</script>
+</body>
+</html>

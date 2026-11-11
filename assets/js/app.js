@@ -12,7 +12,7 @@
   /* ---------- Contenido por defecto ---------- */
   const DEFAULTS = {
     config: {
-      whatsapp: '573000000000',
+      whatsapp: '573505457420',
       instagram: '',
       ciudad: 'Cúcuta',
       lugar: 'Lugar por confirmar · Cúcuta',
@@ -34,7 +34,8 @@
       equipo: 168000,
       equipoMin: 3,
       clinica: 148000,
-      clinicaMin: 5
+      clinicaMin: 5,
+      anticipoPct: 50
     },
     galeria: [],      // [{ src, titulo }]
     testimonios: []   // [{ nombre, profesion, texto, foto }]
@@ -66,6 +67,7 @@
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const cop = (n) => '$' + Math.round(Number(n) || 0).toLocaleString('es-CO').replace(/,/g, '.');
+  const anticipoDe = (v) => Math.round((Number(v) || 0) * (Number(state.precios.anticipoPct) || 50) / 100);
   const initials = (name) => (name || '').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '★';
 
   /* ---------- IndexedDB (fotos pesan más que localStorage) ---------- */
@@ -131,7 +133,8 @@
     });
     // precios
     const p = state.precios;
-    $$('[data-price]').forEach(el => { el.textContent = cop(p[el.dataset.price]); });
+    const prices = { ...p, anticipo: anticipoDe(p.individual) };
+    $$('[data-price]').forEach(el => { el.textContent = cop(prices[el.dataset.price]); });
     $$('[data-save]').forEach(el => {
       const plan = el.dataset.save;
       const pct = p.individual ? Math.round((1 - p[plan] / p.individual) * 100) : 0;
@@ -210,9 +213,14 @@
     tick(); cdTimer = setInterval(tick, 1000);
   }
 
-  /* ---------- Formulario ---------- */
+  /* ---------- Formulario, resumen y forma de pago ---------- */
+  // Datos de ePayco: los mismos de la landing de tiendas virtuales (Bio Marketing)
+  const EPAYCO = { key: '347e56166b7cbd26c7257d8689033fba', customer: '1595409', test: false };
+
   const planSelect = $('#planSelect');
   const personasInput = $('#personasInput');
+  const form = $('#form');
+  let payMode = 'anticipo';   // 'anticipo' (50%) | 'total'
 
   function planFromCount(n) {
     const p = state.precios;
@@ -228,17 +236,51 @@
     const p = state.precios;
     return plan === 'Clínica / IPS' ? p.clinica : plan === 'Equipo Pro' ? p.equipo : p.individual;
   }
-  function updateTotal() {
+  // Calcula todo el resumen de la compra
+  function calc() {
     const plan = planSelect.value;
-    const n = Math.max(1, parseInt(personasInput.value, 10) || 1);
-    $('#totalEstimado').textContent = cop(priceFor(plan) * n);
-    const hint = $('#planHint');
-    if (plan === 'Individual') hint.textContent = `¿Vienes con colegas? Desde ${state.precios.equipoMin} personas pagan ${cop(state.precios.equipo)} c/u.`;
-    else hint.textContent = `${n} personas × ${cop(priceFor(plan))} c/u`;
+    let n = Math.max(1, parseInt(personasInput.value, 10) || 1);
+    if (plan !== 'Individual') n = Math.max(n, minFor(plan));
+    const promo = plan !== 'Individual';
+    const full = promo || payMode === 'total';      // promociones: pago completo
+    const total = priceFor(plan) * n;
+    const pay = full ? total : anticipoDe(total);
+    return { plan, n, promo, full, total, pay, saldo: total - pay, unit: priceFor(plan) };
   }
+  function summaryLines(c) {
+    return [
+      ['Plan', `${c.plan} · ${c.n} persona${c.n > 1 ? 's' : ''}`],
+      ['Valor del curso', cop(c.total)],
+      [c.full ? 'Pago' : 'Reserva (50%)', cop(c.pay)],
+      ...(c.saldo > 0 ? [['Saldo el día del curso', cop(c.saldo)]] : [])
+    ];
+  }
+  function updateTotal() {
+    const c = calc();
+    $('#paymode').hidden = c.promo;
+    $('#promoNote').hidden = !c.promo;
+    $$('.paymode__opt').forEach(b => {
+      const on = b.dataset.mode === payMode;
+      b.classList.toggle('is-on', on); b.setAttribute('aria-checked', on);
+    });
+    $('#pmAnticipo').textContent = cop(anticipoDe(c.total));
+    $('#pmTotal').textContent = cop(c.total);
+    $('#sumPlan').textContent = `${c.plan} · ${c.n} persona${c.n > 1 ? 's' : ''}`;
+    $('#sumTotal').textContent = cop(c.total);
+    $('#sumSaldoRow').hidden = c.saldo <= 0;
+    $('#sumSaldo').textContent = cop(c.saldo);
+    $('#sumPayLbl').textContent = c.full ? (c.promo ? 'Pago total (promoción)' : 'Pago total') : 'Pagas hoy para reservar';
+    $('#sumPay').textContent = cop(c.pay);
+    $('#payBtnTxt').textContent = `Pagar ${cop(c.pay)} con tarjeta o PSE`;
+    const hint = $('#planHint');
+    if (c.plan === 'Individual') hint.textContent = `¿Vienes con colegas? Desde ${state.precios.equipoMin} personas pagan ${cop(state.precios.equipo)} c/u.`;
+    else hint.textContent = `${c.n} personas × ${cop(c.unit)} c/u`;
+  }
+  $$('.paymode__opt').forEach(b => b.addEventListener('click', () => { payMode = b.dataset.mode; updateTotal(); }));
   planSelect.addEventListener('change', () => {
     const min = minFor(planSelect.value);
-    if ((parseInt(personasInput.value, 10) || 1) < min || planSelect.value === 'Individual') personasInput.value = planSelect.value === 'Individual' ? 1 : min;
+    if (planSelect.value === 'Individual') personasInput.value = 1;
+    else if ((parseInt(personasInput.value, 10) || 1) < min) personasInput.value = min;
     updateTotal();
   });
   personasInput.addEventListener('input', () => {
@@ -251,31 +293,155 @@
     planSelect.dispatchEvent(new Event('change'));
   }));
 
-  $('#form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const f = e.target;
+  function validate(f, names) {
     let ok = true;
-    ['nombre', 'profesion', 'celular'].forEach(n => {
+    names.forEach(n => {
       const el = f.elements[n];
-      const bad = !el.value.trim();
+      let bad = !el.value.trim();
+      if (n === 'celular' && el.value.replace(/\D/g, '').length < 7) bad = true;
       el.classList.toggle('is-invalid', bad);
       if (bad) ok = false;
     });
-    if (!ok) { f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); return; }
-    const plan = planSelect.value;
-    const n = Math.max(1, parseInt(personasInput.value, 10) || 1);
-    const text =
-`Hola 👋 quiero reservar mi cupo en el *Curso de CapCut para el Sector Salud*.
+    if (!ok) { f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); f.querySelector('.is-invalid')?.focus(); }
+    return ok;
+  }
+  $$('#form input, #form select').forEach(el => el.addEventListener('input', () => el.classList.remove('is-invalid')));
 
-👤 Nombre: ${f.elements.nombre.value.trim()}
-🩺 Profesión: ${f.elements.profesion.value}
-📱 Celular: ${f.elements.celular.value.trim()}
-🎟️ Plan: ${plan} · ${n} persona(s)
-💰 Total estimado: ${cop(priceFor(plan) * n)}
+  function waText(c, nombre, celular, profesion, extra) {
+    return `Hola 👋 quiero ${extra || 'terminar mi registro'} en el *Curso de CapCut para el Sector Salud*.
+
+👤 Nombre: ${nombre}
+${profesion ? `🩺 Profesión: ${profesion}\n` : ''}📱 WhatsApp: ${celular}
+
+🧾 *Resumen*
+${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
 
 📅 ${state.config.fechaTexto} · ${state.config.horario} · ${state.config.ciudad}`;
-    window.open(waLink(text), '_blank', 'noopener');
+  }
+
+  // Botón principal: pagar con tarjeta o PSE
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validate(form, ['nombre', 'profesion', 'celular'])) return;
+    pay(calc());
   });
+
+  // Botón: terminar registro por WhatsApp (pide nombre y WhatsApp)
+  const waModal = $('#waModal'), waForm = $('#waForm');
+  $('#waFinishBtn').addEventListener('click', () => {
+    const c = calc();
+    waForm.elements.nombre.value = form.elements.nombre.value;
+    waForm.elements.celular.value = form.elements.celular.value;
+    $('#waModalSum').innerHTML = summaryLines(c).map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('');
+    waModal.hidden = false;
+    setTimeout(() => (waForm.elements.nombre.value ? waForm.elements.celular : waForm.elements.nombre).focus(), 60);
+  });
+  waForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!validate(waForm, ['nombre', 'celular'])) return;
+    const c = calc();
+    const nombre = waForm.elements.nombre.value.trim(), cel = waForm.elements.celular.value.trim();
+    form.elements.nombre.value = nombre; form.elements.celular.value = cel;
+    window.open(waLink(waText(c, nombre, cel, form.elements.profesion.value)), '_blank', 'noopener');
+    waModal.hidden = true;
+  });
+  $$('#waForm input').forEach(el => el.addEventListener('input', () => el.classList.remove('is-invalid')));
+
+  /* ---------- ePayco (mismo esquema que la landing de tiendas virtuales) ---------- */
+  const payLoader = $('#payLoader'), payFail = $('#payFail');
+  const backUrl = () => new URL('pago-ok.html', location.href).href.split('#')[0].split('?')[0];
+  const describe = (c) => `Curso CapCut Salud - ${c.plan} x${c.n} - ${c.full ? 'Pago total' : 'Reserva 50%'}`;
+  let loaded = {}, payErr = [], lastPay = null;
+
+  function loadScript(src) {
+    if (loaded[src]) return loaded[src];
+    return (loaded[src] = new Promise((res, rej) => {
+      const sc = document.createElement('script'); sc.src = src;
+      sc.onload = res;
+      sc.onerror = () => { delete loaded[src]; rej(new Error('no cargó ' + src.split('/').pop() + ' (¿bloqueador de anuncios?)')); };
+      document.head.appendChild(sc);
+    }));
+  }
+  function waitEpayco(ms) {
+    return new Promise((res, rej) => {
+      const t0 = Date.now();
+      (function chk() {
+        if (window.ePayco && ePayco.checkout && typeof ePayco.checkout.configure === 'function') return res(ePayco);
+        if (Date.now() - t0 > ms) return rej(new Error('ePayco cargó pero no se inicializó'));
+        setTimeout(chk, 120);
+      })();
+    });
+  }
+  function loadEpayco(name) {
+    const direct = `https://checkout.epayco.co/${name}.js`, proxy = `/api/epayco-js?f=${name}`;
+    return loadScript(direct).then(() => waitEpayco(6000)).catch((e1) =>
+      loadScript(proxy).then(() => waitEpayco(6000)).catch((e2) => { throw new Error(e1.message + ' / respaldo: ' + e2.message); }));
+  }
+  // 1) Checkout v2: la sesión se crea en el servidor (Vercel) y el precio se valida allá
+  function payV2(c) {
+    const f = form.elements;
+    const session = fetch('/api/epayco', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: c.plan, personas: c.n, full: c.full, name: f.nombre.value, phone: f.celular.value, profesion: f.profesion.value })
+    }).then(r => r.json().catch(() => ({})).then(d => { if (!r.ok || !d.sessionId) throw new Error('servidor: ' + (d.error || 'HTTP ' + r.status)); return d; }));
+    return Promise.all([session, loadEpayco('checkout-v2')]).then(([d]) => {
+      const ch = ePayco.checkout.configure({ sessionId: d.sessionId, type: 'onepage', test: !!d.test });
+      if (ch && ch.onErrors) ch.onErrors(err => console.error('ePayco v2', err));
+      if (!ch || typeof ch.open !== 'function') throw new Error('checkout v2 sin método open');
+      ch.open();
+    });
+  }
+  // 2) Respaldo: checkout clásico con la llave pública (funciona aunque no haya servidor)
+  function payLegacy(c) {
+    if (window.ePayco && window.ePayco.checkout && !loaded['https://checkout.epayco.co/checkout.js'] && !loaded['/api/epayco-js?f=checkout']) {
+      try { delete window.ePayco; } catch { window.ePayco = undefined; }
+    }
+    return loadEpayco('checkout').then(() => {
+      const f = form.elements;
+      const handler = ePayco.checkout.configure({ key: EPAYCO.key, test: EPAYCO.test, p_cust_id_cliente: EPAYCO.customer });
+      handler.open({
+        name: 'Curso CapCut Salud Pro',
+        description: describe(c),
+        invoice: 'CCS-' + Date.now(),
+        currency: 'cop',
+        amount: String(c.pay),
+        tax_base: '0', tax: '0',
+        country: 'co', lang: 'es', external: 'false',
+        extra1: c.plan, extra2: c.full ? 'total' : 'anticipo', extra3: String(c.n),
+        name_billing: f.nombre.value.trim(),
+        mobilephone_billing: f.celular.value.replace(/\D/g, '').slice(-10),
+        response: backUrl(), confirmation: backUrl()
+      });
+    });
+  }
+  function busy(on) {
+    const b = $('#payBtn'); b.disabled = on;
+    payLoader.hidden = !on;
+    if (!on) updateTotal(); else $('#payBtnTxt').textContent = 'Cargando pago seguro…';
+  }
+  function pay(c) {
+    lastPay = c; payErr = [];
+    const f = form.elements;
+    try {
+      localStorage.setItem('ccs_pago', JSON.stringify({
+        plan: c.plan, personas: c.n, total: c.total, pagado: c.pay, saldo: c.saldo, full: c.full,
+        nombre: f.nombre.value.trim(), celular: f.celular.value.trim(), profesion: f.profesion.value, wa: state.config.whatsapp
+      }));
+    } catch { /* nada */ }
+    busy(true);
+    const tryV2 = /^https?:$/.test(location.protocol) ? payV2(c) : Promise.reject(new Error('abierto como archivo local'));
+    tryV2
+      .catch(e => { payErr.push('v2: ' + (e && e.message || e)); console.warn('ePayco v2:', e); return payLegacy(c); })
+      .catch(e => { payErr.push('clásico: ' + (e && e.message || e)); console.error('ePayco clásico:', e); payFallback(c); })
+      .then(() => busy(false));
+  }
+  function payFallback(c) {
+    const f = form.elements;
+    $('#payFailErr').textContent = payErr.length ? 'Detalle técnico: ' + payErr.join(' · ') : '';
+    $('#payFailWa').href = waLink(waText(c, f.nombre.value.trim(), f.celular.value.trim(), f.profesion.value, 'pagar con tarjeta o PSE y recibir el link de pago'));
+    payFail.hidden = false;
+  }
+  $('#payRetry').addEventListener('click', () => { payFail.hidden = true; if (lastPay) pay(calc()); });
 
   /* ---------- Navegación ---------- */
   const nav = $('#nav');
@@ -344,7 +510,7 @@
     if (location.hash === '#admin') history.replaceState(null, '', location.pathname);
   }));
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { loginModal.hidden = true; adminModal.hidden = true; lb.hidden = true; }
+    if (e.key === 'Escape') $$('.modal, #lightbox').forEach(m => (m.hidden = true));
   });
 
   // Tabs

@@ -1,0 +1,7 @@
+{
+  "name": "capcut-salud-pro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing del curso CapCut para el sector salud con pagos ePayco (funciones de Vercel).",
+  "engines": { "node": ">=20" }
+}
