@@ -144,14 +144,36 @@
   }
 
   /* ---------- Carga de contenido ---------- */
+  // Estado del servidor: si Vercel tiene conectada la base de datos (Upstash), lo que se guarda en el
+  // administrador queda publicado para TODOS los visitantes, no solo en este navegador.
+  const server = { storage: false, hasContent: false, token: '' };
+  try { server.token = sessionStorage.getItem('csp-token') || ''; } catch { /* nada */ }
+
+  async function fetchJSON(url, opts = {}, ms = 8000) {
+    const ctrl = ('AbortController' in window) ? new AbortController() : null;
+    const t = setTimeout(() => ctrl && ctrl.abort(), ms);
+    try {
+      const r = await fetch(url, { ...opts, signal: ctrl ? ctrl.signal : undefined });
+      const d = await r.json().catch(() => ({}));
+      return { ok: r.ok, status: r.status, data: d };
+    } finally { clearTimeout(t); }
+  }
+
   async function loadContent() {
-    let published = null;
+    let published = null, remote = null;
     try {
       const r = await fetch('data/contenido.json', { cache: 'no-store' });
       if (r.ok) published = await r.json();
     } catch { /* abierto como archivo local o sin json: usa valores por defecto */ }
-    const local = await dbGet(LOCAL_KEY);
-    state = merge(merge(clone(DEFAULTS), published), local);
+    if (/^https?:$/.test(location.protocol)) {
+      try {
+        const r = await fetchJSON('/api/content', { cache: 'no-store' }, 6000);
+        if (r.ok) { server.storage = !!r.data.storage; remote = r.data.content || null; server.hasContent = !!remote; }
+      } catch { /* sin servidor */ }
+    }
+    // Los cambios guardados solo en este navegador se usan únicamente si el servidor aún no tiene contenido
+    const local = remote ? null : await dbGet(LOCAL_KEY);
+    state = merge(merge(merge(clone(DEFAULTS), published), remote), local);
   }
 
   /* ---------- Render ---------- */
@@ -677,7 +699,7 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
   const adminModal = $('#adminModal');
 
   function openAdmin() {
-    if (sessionStorage.getItem('csp-admin') === '1') return showAdmin();
+    if (sessionStorage.getItem('csp-admin') === '1' && (server.token || !server.storage)) return showAdmin();
     loginModal.hidden = false;
     $('#loginErr').hidden = true;
     $('#adminPass').value = '';
@@ -687,10 +709,20 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
   if (location.hash === '#admin') openAdmin();
   window.addEventListener('hashchange', () => { if (location.hash === '#admin') openAdmin(); });
 
-  $('#loginForm').addEventListener('submit', (e) => {
+  $('#loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    if ($('#adminPass').value === ADMIN_KEY) {
-      try { sessionStorage.setItem('csp-admin', '1'); } catch { /* nada */ }
+    const pass = $('#adminPass').value;
+    let ok = false;
+    if (/^https?:$/.test(location.protocol)) {
+      try {
+        const r = await fetchJSON('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
+        if (r.ok && r.data.token) { ok = true; server.token = r.data.token; server.storage = !!r.data.storage; }
+        else if (r.status === 401) ok = false;
+        else ok = pass === ADMIN_KEY;                 // sin funciones de servidor: clave local
+      } catch { ok = pass === ADMIN_KEY; }
+    } else ok = pass === ADMIN_KEY;
+    if (ok) {
+      try { sessionStorage.setItem('csp-admin', '1'); if (server.token) sessionStorage.setItem('csp-token', server.token); } catch { /* nada */ }
       loginModal.hidden = true;
       showAdmin();
     } else {
@@ -717,6 +749,10 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
   function showAdmin() {
     adminModal.hidden = false;
     fillAdmin();
+    setSyncBadge();
+    $('#storageHelp').hidden = !!server.storage;
+    // Si hay fotos o cambios guardados solo en este navegador y el servidor está listo, se publican de una vez
+    if (server.storage && server.token && JSON.stringify(state).includes('data:image/')) persist(true);
   }
 
   function fillAdmin() {
@@ -743,13 +779,62 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
 
   let saveT;
   function scheduleSave() { clearTimeout(saveT); saveT = setTimeout(() => persist(false), 500); }
-  async function persist(showMsg = true) {
-    try {
-      await dbSet(LOCAL_KEY, state);
-      if (showMsg) toast('✓ Cambios guardados en este navegador');
-    } catch (err) {
-      toast('⚠️ No se pudo guardar (espacio lleno). Elimina fotos o descarga un respaldo.');
+  // Sube al servidor cada foto que aún esté guardada dentro del contenido (data:image…) y la reemplaza por su enlace
+  async function uploadInlineImages(obj) {
+    for (const k of Object.keys(obj)) {
+      const v = obj[k];
+      if (typeof v === 'string' && v.startsWith('data:image/')) {
+        const r = await fetchJSON('/api/upload', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + server.token },
+          body: JSON.stringify({ data: v })
+        }, 30000);
+        if (!r.ok || !r.data.url) throw Object.assign(new Error(r.data.error || 'No se pudo subir una foto.'), { status: r.status });
+        obj[k] = r.data.url;
+      } else if (v && typeof v === 'object') await uploadInlineImages(v);
     }
+  }
+  let saving = null, saveAgain = false;
+  async function persist(showMsg = true) {
+    try { await dbSet(LOCAL_KEY, state); } catch { /* el respaldo local es opcional */ }
+    if (!(server.storage && server.token)) {
+      setSyncBadge();
+      if (showMsg) toast('✓ Guardado solo en este navegador');
+      return;
+    }
+    if (saving) { saveAgain = true; return saving; }
+    saving = (async () => {
+      setSyncBadge('saving');
+      try {
+        await uploadInlineImages(state);
+        const r = await fetchJSON('/api/content', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + server.token },
+          body: JSON.stringify({ content: state })
+        }, 20000);
+        if (!r.ok) throw Object.assign(new Error(r.data.error || 'No se pudo publicar.'), { status: r.status });
+        server.hasContent = true;
+        await dbDel(LOCAL_KEY);                      // ya está publicado: no hace falta la copia local
+        setSyncBadge();
+        if (showMsg) toast('✓ Publicado: ya lo ven todos los visitantes');
+        render(); if (!adminModal.hidden) { renderAdmInstr(); renderAdmGallery(); renderAdmTestis(); renderAdmCaptures(); renderAdmCert(); renderAdmImgs(); }
+      } catch (err) {
+        setSyncBadge('error');
+        if (err.status === 401) {
+          server.token = ''; try { sessionStorage.removeItem('csp-token'); } catch { /* nada */ }
+          toast('⚠️ Tu sesión terminó. Cierra el panel e ingresa de nuevo para publicar.');
+        } else toast('⚠️ ' + (err.message || 'No se pudo publicar') + ' Tus cambios quedaron guardados en este navegador.');
+      } finally {
+        saving = null;
+        if (saveAgain) { saveAgain = false; persist(false); }
+      }
+    })();
+    return saving;
+  }
+  function setSyncBadge(mode) {
+    const el = $('#syncBadge'); if (!el) return;
+    if (mode === 'saving') { el.className = 'sync sync--saving'; el.textContent = '⏳ Publicando…'; return; }
+    if (mode === 'error') { el.className = 'sync sync--error'; el.textContent = '⚠️ Sin publicar'; return; }
+    if (server.storage && server.token) { el.className = 'sync sync--ok'; el.textContent = '🟢 Publicado para todos'; }
+    else { el.className = 'sync sync--local'; el.textContent = '🟠 Solo en este navegador'; }
   }
   $('#adminSave').addEventListener('click', () => { clearTimeout(saveT); persist(true); });
 
@@ -987,7 +1072,7 @@ ${summaryLines(c).map(([k, v]) => `• ${k}: ${v}`).join('\n')}
     e.target.value = '';
   });
   $('#admReset').addEventListener('click', async () => {
-    if (!confirm('Esto borra los cambios guardados en este navegador y vuelve al contenido publicado. ¿Continuar?')) return;
+    if (!confirm('Esto borra los cambios guardados solo en este navegador y vuelve al contenido publicado. ¿Continuar?')) return;
     await dbDel(LOCAL_KEY);
     await loadContent();
     fillAdmin(); render(); startCountdown();

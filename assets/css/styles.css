@@ -1047,3 +1047,14 @@ p { margin: 0 0 1em; }
   .bento--n6 .bento__item:nth-child(n+6), .bento--n7 .bento__item:nth-child(n+6) { grid-column: auto; }
   .bento--n6 .bento__item:nth-child(6), .bento--n4 .bento__item:last-child { grid-column: span 2; }
 }
+
+/* Administrador: estado de publicación */
+.sync { font-size: .78rem; font-weight: 800; padding: .45em .9em; border-radius: 999px; white-space: nowrap; border: 1px solid; }
+.sync--ok { color: #6ff2c0; border-color: rgba(0,229,199,.45); background: rgba(0,229,199,.1); }
+.sync--local { color: #ffc46b; border-color: rgba(255,196,107,.45); background: rgba(255,196,107,.1); }
+.sync--saving { color: #c9b8ff; border-color: rgba(123,92,255,.5); background: rgba(123,92,255,.14); }
+.sync--error { color: #ff8b98; border-color: rgba(255,84,112,.5); background: rgba(255,84,112,.12); }
+.storage-help { padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,196,107,.08); border: 1px solid rgba(255,196,107,.4); margin-bottom: 1rem; }
+.storage-help p { margin: .4rem 0; color: #e6dcc8; font-size: .9rem; }
+.storage-help ol { margin: .4rem 0 0; padding-left: 1.2rem; color: #e6dcc8; font-size: .9rem; display: grid; gap: .3rem; }
+@media (max-width: 640px) { .sync { display: none; } }

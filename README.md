@@ -39,6 +39,17 @@ Para que todos los visitantes los vean:
 La clave está en el código de la página, así que solo evita que un visitante cualquiera abra el panel;
 no es una protección real. Nadie puede cambiar lo que ven los demás sin subir el archivo al sitio.
 
+## Publicar cambios del administrador para TODOS (base de datos gratuita)
+Las fotos e información que subes en el administrador se guardan en **Upstash Redis** (gratis), igual que la landing de tiendas.
+Configuración en Vercel (una sola vez):
+1. Vercel → proyecto **capcutsectorsalud** → pestaña **Storage** → **Create Database** → **Upstash for Redis** → plan **Free** → **Create**.
+2. Conéctala al proyecto (Production y Preview). Vercel crea solas `KV_REST_API_URL` y `KV_REST_API_TOKEN`.
+3. Opcional: `ADMIN_PASSWORD` en Settings → Environment Variables (si no, la clave es `123456`).
+4. Deployments → ⋯ → **Redeploy**.
+
+En el administrador, el indicador **🟢 Publicado para todos** confirma que funciona. Si dice **🟠 Solo en este navegador**, falta este paso.
+Al entrar al panel con la base de datos conectada, las fotos que antes quedaron guardadas solo en tu navegador se suben automáticamente.
+
 ## Estructura
 ```
 index.html              Página
@@ -47,5 +58,8 @@ assets/js/app.js        Lógica, formulario a WhatsApp y panel administrador
 data/contenido.json     Contenido publicado (lo genera el administrador)
 pago-ok.html            Resultado del pago (ePayco regresa aquí)
 api/epayco.js           Función de Vercel: crea la sesión de pago
+api/content.js          Función de Vercel: contenido publicado desde el administrador
+api/upload.js, img.js   Funciones de Vercel: fotos subidas desde el administrador
+api/login.js            Función de Vercel: clave del administrador
 api/epayco-js.js        Función de Vercel: respaldo del script de ePayco
 ```

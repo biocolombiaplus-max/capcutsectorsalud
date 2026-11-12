@@ -916,7 +916,8 @@
     <div class="admin__head">
       <h3>⚙️ Administrador</h3>
       <div class="admin__head-actions">
-        <button class="btn btn--primary btn--sm" id="adminSave">Guardar cambios</button>
+        <span class="sync sync--local" id="syncBadge">🟠 Solo en este navegador</span>
+        <button class="btn btn--primary btn--sm" id="adminSave">Guardar y publicar</button>
         <button class="modal__close" data-close aria-label="Cerrar">✕</button>
       </div>
     </div>
@@ -931,6 +932,15 @@
       <button data-tab="publicar">Publicar / Respaldo</button>
     </div>
     <div class="admin__body">
+      <div class="storage-help" id="storageHelp" hidden>
+        <b>⚠️ Tus cambios solo se ven en este navegador.</b>
+        <p>Para que <b>todos</b> vean las fotos e información que subas, conecta la base de datos gratuita (una sola vez):</p>
+        <ol>
+          <li>Entra a <b>vercel.com</b> → proyecto <b>capcutsectorsalud</b> → pestaña <b>Storage</b>.</li>
+          <li><b>Create Database</b> → <b>Upstash for Redis</b> → plan <b>Free</b> → <b>Create</b> → conéctala al proyecto.</li>
+          <li><b>Deployments</b> → ⋯ → <b>Redeploy</b>. Luego vuelve a entrar aquí y toca <b>Guardar y publicar</b>.</li>
+        </ol>
+      </div>
       <!-- General -->
       <div class="admin__pane is-active" data-pane="general">
         <div class="grid2">
@@ -1027,11 +1037,12 @@
       <div class="admin__pane" data-pane="publicar">
         <div class="publish-box">
           <h4>¿Cómo se guardan los cambios?</h4>
-          <p>“Guardar cambios” los guarda <strong>en este navegador</strong>. Para que <strong>todos los visitantes</strong> vean las nuevas fotos e información, descarga el archivo <code>contenido.json</code> y súbelo a la carpeta <code>data/</code> del sitio (reemplazando el anterior).</p>
+          <p>Con la base de datos conectada (indicador <b>🟢 Publicado para todos</b>), cada cambio y cada foto se publica automáticamente y lo ven todos los visitantes.</p>
+          <p>Si el indicador dice <b>🟠 Solo en este navegador</b>, sigue los pasos del aviso de arriba. Mientras tanto puedes descargar un respaldo con <code>contenido.json</code>.</p>
           <div class="publish-actions">
             <button class="btn btn--primary btn--sm" id="admExport" type="button">⬇️ Descargar contenido.json</button>
             <label class="btn btn--ghost btn--sm file-btn">⬆️ Importar respaldo<input type="file" accept="application/json,.json" id="admImport" hidden></label>
-            <button class="btn btn--danger btn--sm" id="admReset" type="button">Descartar cambios locales</button>
+            <button class="btn btn--danger btn--sm" id="admReset" type="button">Descartar cambios de este navegador</button>
           </div>
         </div>
       </div>

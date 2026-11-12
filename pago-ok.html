@@ -55,8 +55,10 @@ p{color:#A8B0CC;margin-bottom:22px;line-height:1.55}
       fbq('track', 'Purchase', { value: parseFloat(value) || 0, currency: 'COP', content_name: 'Curso CapCut Salud' + (info.plan ? ' · ' + info.plan : '') });
     }
     if(info.pixel) return fire(info.pixel);
-    fetch('data/contenido.json', { cache: 'no-store' }).then(function(r){ return r.json(); })
-      .then(function(d){ fire(d && d.config && d.config.metaPixel); }).catch(function(){});
+    fetch('/api/content', { cache: 'no-store' }).then(function(r){ return r.json(); })
+      .then(function(d){ var c = d && d.content && d.content.config; if(c && c.metaPixel) return fire(c.metaPixel); throw 0; })
+      .catch(function(){ return fetch('data/contenido.json', { cache: 'no-store' }).then(function(r){ return r.json(); })
+        .then(function(d){ fire(d && d.config && d.config.metaPixel); }); }).catch(function(){});
   }
   var card = document.getElementById('card'), ic = document.getElementById('ic'), tt = document.getElementById('tt'), sub = document.getElementById('sub');
   var cop = function(n){ return '$' + Math.round(Number(n) || 0).toLocaleString('es-CO').replace(/,/g, '.'); };
